@@ -1,0 +1,97 @@
+﻿FUNCTION_BLOCK "AllDpump"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR 
+      dp101 : "DPumpCntr";
+      dp501 : "DPumpCntr";
+      dp502 : "DPumpCntr";
+      dp801 : "DPumpCntr";
+      dp802 : "DPumpCntr";
+      dp803 : "DPumpCntr";
+      dp1001 : "DPumpCntr";
+   END_VAR
+
+
+BEGIN
+	
+	REGION Dpumps handlers
+	    #dp101(power := TRUE,
+	           run := "iDP101_Run",
+	           emrStop := TRUE,
+	           alarmFC := "iDP101_Fail",
+	           Ack := "dbMain".Ack,
+	           FE := 0.0,
+	           qStart => "qDP101_Start",
+	           pqw => "aqDP101",
+	           dev := "dtDpump".dp101,
+	           prop := "dtPropDpump".dp101);
+	    
+	    #dp501(power := TRUE,
+	           run := "iDP501_Run",
+	           emrStop := TRUE,
+	           alarmFC := "iDP501_Fail",
+	           Ack := "dbMain".Ack,
+	           FE := 0.0,
+	           qStart => "qDP501_Start",
+	           pqw => "aqDP501",
+	           dev := "dtDpump".dp501,
+	           prop := "dtPropDpump".dp501);
+	    
+	    #dp502(power := TRUE,
+	           run := "iDP502_Run",
+	           emrStop := TRUE,
+	           alarmFC := "iDP502_Fail",
+	           Ack := "dbMain".Ack,
+	           FE := 0.0,
+	           qStart => "qDP502_Start",
+	           pqw => "aqDP502",
+	           dev := "dtDpump".dp502,
+	           prop := "dtPropDpump".dp502);
+	    
+	    #dp801(power := TRUE,
+	           run := "iDP801_Run",
+	           emrStop := TRUE,
+	           alarmFC := "iDP801_Fail",
+	           Ack := "dbMain".Ack,
+	           FE := 0.0,
+	           qStart => "qDP801_Start",
+	           pqw => "aqDP801",
+	           dev := "dtDpump".dp801,
+	           prop := "dtPropDpump".dp801);
+	    
+	    #dp802(power := TRUE,
+	           run := "iDP802_Run",
+	           emrStop := TRUE,
+	           alarmFC := "iDP802_Fail",
+	           Ack := "dbMain".Ack,
+	           FE := 0.0,
+	           qStart => "qDP802_Start",
+	           pqw => "aqDP802",
+	           dev := "dtDpump".dp802,
+	           prop := "dtPropDpump".dp802);
+	    
+	    #dp803(power := TRUE,
+	           run := "iDP803_Run",
+	           emrStop := TRUE,
+	           alarmFC := "iDP803_Fail",
+	           Ack := "dbMain".Ack,
+	           FE := 0.0,
+	           qStart => "qDP803_Start",
+	           pqw => "aqDP803",
+	           dev := "dtDpump".dp803,
+	           prop := "dtPropDpump".dp803);
+	    
+	    #dp1001(power := TRUE,
+	            run := "iDP1001_Run",
+	            emrStop := TRUE,
+	            alarmFC := "iDP1001_Fail",
+	            Ack := "dbMain".Ack,
+	            FE := 0.0,
+	            qStart => "qDP1001_Start",
+	            pqw => "aqDP1001",
+	            dev := "dtDpump".dp1001,
+	            prop := "dtPropDpump".dp1001);
+	END_REGION
+	
+END_FUNCTION_BLOCK
+
