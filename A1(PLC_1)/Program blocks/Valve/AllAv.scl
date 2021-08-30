@@ -1,0 +1,39 @@
+﻿FUNCTION_BLOCK "AllAv"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR 
+      DVM201 : "AvCntrl";
+      SOV801 : "AvCntrl";
+      SOV901 : "AvCntrl";
+      SOV902 : "AvCntrl";
+      SOV1301 : "AvCntrl";
+      SOV1302 : "AvCntrl";
+      SOV1303 : "AvCntrl";
+      DVA501 : "AvCntrl";
+      DVA502 : "AvCntrl";
+      DVA504 : "AvCntrl";
+      DVA505 : "AvCntrl";
+      DVA506 : "AvCntrl";
+      DVA507 : "AvCntrl";
+      DVA508 : "AvCntrl";
+      DVA509 : "AvCntrl";
+      DVA511 : "AvCntrl";
+      DVA512 : "AvCntrl";
+      DVA513 : "AvCntrl";
+      DVA514 : "AvCntrl";
+      DVA515 : "AvCntrl";
+      DVA516 : "AvCntrl";
+      DVA1801 : "AvCntrl";
+   END_VAR
+
+
+BEGIN
+	#DVM201(power:="AlwaysTRUE",
+	        open := "qDVM201_Open",
+	        close := NOT "qDVM201_Open",
+	        dev := "dtAV".DVM201,
+	        qKm => "qDVM201_Open");
+	
+	
+END_FUNCTION_BLOCK
+

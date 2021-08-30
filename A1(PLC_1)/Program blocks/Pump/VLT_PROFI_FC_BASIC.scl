@@ -1,0 +1,296 @@
+﻿FUNCTION "VLT_PROFI_FC_BASIC" : Void
+TITLE = VLT_PROFI_FC_BASIC
+{ S7_Optimized_Access := 'FALSE' }
+AUTHOR : Danfoss_Drives
+FAMILY : VLT
+VERSION : 1.12
+//Basic Operation Function Block
+   VAR_INPUT 
+      sim : Bool;
+      ADR : HW_IO;   // S7-1200/1500 requires HW Identifier. Can be found in HW configuration for the specific PPO type
+      DRV_EN : Bool;   // Enable Drive. Setting the Drive in Ready to Start mode.
+      RUN : Bool;   // Run/Stop drive
+      REVERSE : Bool;   // Drive Reverse mode. Also set P4-10 to "both directions" to allow.
+      RESET : Bool;   // Reset alarms. Only Trip, not Trip lock.
+      REF_VALUE : Real;   // Reference speed 0 - 10000 = 0 - 100.00%
+   END_VAR
+
+   VAR_OUTPUT 
+      UZ : "UZ_Data";
+   END_VAR
+
+   VAR_TEMP 
+      PCDRead : Struct   // Pointer to data structure for FC data
+         STW : Struct   // Status word
+            BIT_00_CTRL_RDY : Bool;   // 0=Control not ready, 1=Control ready
+            BIT_01_DRV_RDY : Bool;   // 0=Frequency converter, 1=Frequency converter ready
+            BIT_02_COAST_RDY : Bool;   // 0=Coasting, 1=Enable
+            BIT_03_TRIP : Bool;   // 0=No error, 1=Trip
+            BIT_04_ERROR : Bool;   // 0=No error, 1=Error (no trip)
+            BIT_05_RESERVED : Bool;   // 0=Reserved, 1=---
+            BIT_06_TRIPLOCK : Bool;   // 0=No error, 1=Triplock
+            BIT_07_WARNING : Bool;   // 0=No warning, 1=Warning
+            BIT_08_RUNNING_REF : Bool;   // 0=Speed <> reference, 1=Speed=reference
+            BIT_09_CTRL_SOURCE : Bool;   // 0=Local operation, 1=Bus control
+            BIT_10_F_LIMIT_OK : Bool;   // 0=Out of frequency limit, 1=Frequency limit ok
+            BIT_11_IN_OPR : Bool;   // 0=No operation, 1=In operation
+            BIT_12_IN_AUTOSTART : Bool;   // 0=Frequency converter OK, 1=Stopped, autostart
+            BIT_13_VOLT_MAX : Bool;   // 0=Voltage OK, 1=Voltage exceeded
+            BIT_14_TORQ_MAX : Bool;   // 0=Torque OK, 1=Torque exceeded
+            BIT_15_TIMER_EXD : Bool;   // 0=Timer OK, 1=Timer exceeded
+         END_STRUCT;
+         MAV : Int;   // Main actual value
+         PCD_02 : Int;   // PCD 02
+         PCD_03 : Int;   // PCD 03
+         PCD_04 : Int;   // PCD 04
+         PCD_05 : Int;   // PCD 05
+      END_STRUCT;
+      PCDWrite : Struct   // Pointer to data structure for FC data
+         CTW : Struct   // Control word
+            BIT_00_PRESET_REF_1 : Bool;   // 0=Reference value, 1=selection lsb
+            BIT_01_PRESET_REF_2 : Bool;   // 0=Reference value, 1=selection msb
+            BIT_02_DC_BRAKE_RAMP : Bool;   // 0=DC brake, 1=Ramp
+            BIT_03_COAST_INV : Bool;   // 0=Coasting, 1=No coasting
+            BIT_04_QSTP_RMP : Bool;   // 0=Quick stop, 1=Ramp
+            BIT_05_HLD_RMP : Bool;   // 0=Hold output frequency, 1=Use ramp
+            BIT_06_START : Bool;   // 0=Ramp stop, 1=Start
+            BIT_07_RESET : Bool;   // 0=No function, 1=Reset
+            BIT_08_JOG : Bool;   // 0=No function, 1=Jog
+            BIT_09_RAMP_1_2 : Bool;   // 0=Ramp 1, 1=Ramp 2
+            BIT_10_DATA_VALID : Bool;   // 0=Dont use CTW, 1= Use CTW
+            BIT_11_RLY_1_ON : Bool;   // 0=Relay 01 deactived, 1=Relay 01 active
+            BIT_12_RLY_2_ON : Bool;   // 0=Relay 02 deactived, 1=Relay 02 active
+            BIT_13_SETUP_SEL_1 : Bool;   // 0=Parameter set-up, 1=selection lsb
+            BIT_14_SETUP_SEL_2 : Bool;   // 0=Parameter set-up, 1=selection msb
+            BIT_15_REVERSE : Bool;   // 0= No Reverse, 1= Reverse
+         END_STRUCT;
+         MRV : Int;   // Main reference value
+         PCD_02 : Int;   // PCD 02
+         PCD_03 : Int;   // PCD 03
+         PCD_04 : Int;   // PCD 04
+         PCD_05 : Int;   // PCD 05
+      END_STRUCT;
+      RDRaw_Data : Array[0..5] of Int;   // Data Read. PROFINET:PPO6 only, with 4 words /PROFIBUS:PPO2 only, with 6 words
+      WRRaw_Data : Array[0..5] of Int;   // Data Write. PROFINET:PPO6 only, with 4 words /PROFIBUS:PPO2 only, with 6 words
+      RETVAL : Int;   // Return value for DPRD and DPWR for PNET Comm. 0=no fault
+      CalcSlope : Real;   // Slope of Ref. value, to convert 0-10000 into 0- 16384
+      CurrentInternal : DWord;   // Internal value for current calculation
+      PowerInternal : DWord;
+      AlwaysOn : Bool;   // Always on
+      AlwaysOff : Bool;   // Always off
+   END_VAR
+
+
+BEGIN
+	IF #sim THEN
+	    #UZ.Ready := 1;
+	    #UZ.Fault := 0;
+	    #UZ.Warning := 0;
+	    #UZ.ErrorConnection := 0;
+	    IF #RUN THEN
+	        #UZ.MAV := #REF_VALUE;
+	        #UZ.Running := 1;
+	    ELSE
+	        #UZ.MAV := 0;
+	        #UZ.Running := 0;
+	    END_IF;
+	    
+	ELSE
+	    
+	    //-------------------------------------------------------------------------------------------------------------
+	    // VLT_PROFI_FC_BASIC: Rev. V1.12
+	    // Valid for S7-1200 and S7-1500 Type CPU's.
+	    // Block handles communication with a VLT frequency converter. Either Trough PROFINET OR PROFIBUS.
+	    // The FC handles basic needs and extraction of Motor current.
+	    // PROFINET PPO type is PPO6 (4 words read/Write). PCD2 and PCD3 must be configured for Motor Current.
+	    // PROFIBUS PPO type is PPO2 (6 words read/Write). PCD2 and PCD3 must be configured for Motor Current.
+	    // Can be done in HW config of S7, on the Drive LCP or MCT10.
+	    //-------------------------------------------------------------------------------------------------------------
+	    
+	    //------------------------------------Standard - Control bits--------------------------------------------------
+	    //Can be used locally in Block.
+	    #AlwaysOff := false;
+	    #AlwaysOn := TRUE;
+	    //------------------------------------Standard - Control bits--------------------------------------------------
+	    
+	    //------------------------------------Read data from fieldbus--------------------------------------------------
+	    // Actual data size that is read depends on the Array size.
+	    // Minimum size is 4 words.
+	    // PPO type can be larger but only the 4 first words are read.
+	    // Return value for DPRD and DPWR for PNET Comm. 0=No fault.
+	    #RETVAL := DPRD_DAT(LADDR := #ADR, RECORD => #RDRaw_Data);  // Read Raw Data 
+	    #UZ.comErr := #RETVAL;
+	    //------------------------------------Read data from fieldbus--------------------------------------------------
+	    
+	    //------------------------------------Read Raw Data is mapped with PCDRead------------------------------------------------------
+	    #PCDRead.STW.BIT_00_CTRL_RDY := #RDRaw_Data[0].%X0;
+	    #PCDRead.STW.BIT_01_DRV_RDY := #RDRaw_Data[0].%X1;
+	    #PCDRead.STW.BIT_02_COAST_RDY := #RDRaw_Data[0].%X2;
+	    #PCDRead.STW.BIT_03_TRIP := #RDRaw_Data[0].%X3;
+	    #PCDRead.STW.BIT_04_ERROR := #RDRaw_Data[0].%X4;
+	    #PCDRead.STW.BIT_05_RESERVED := #RDRaw_Data[0].%X5;
+	    #PCDRead.STW.BIT_06_TRIPLOCK := #RDRaw_Data[0].%X6;
+	    #PCDRead.STW.BIT_07_WARNING := #RDRaw_Data[0].%X7;
+	    #PCDRead.STW.BIT_08_RUNNING_REF := #RDRaw_Data[0].%X8;
+	    #PCDRead.STW.BIT_09_CTRL_SOURCE := #RDRaw_Data[0].%X9;
+	    #PCDRead.STW.BIT_10_F_LIMIT_OK := #RDRaw_Data[0].%X10;
+	    #PCDRead.STW.BIT_11_IN_OPR := #RDRaw_Data[0].%X11;
+	    #PCDRead.STW.BIT_12_IN_AUTOSTART := #RDRaw_Data[0].%X12;
+	    #PCDRead.STW.BIT_13_VOLT_MAX := #RDRaw_Data[0].%X13;
+	    #PCDRead.STW.BIT_14_TORQ_MAX := #RDRaw_Data[0].%X14;
+	    #PCDRead.STW.BIT_15_TIMER_EXD := #RDRaw_Data[0].%X15;
+	    
+	    #PCDRead.MAV := #RDRaw_Data[1];
+	    #PCDRead.PCD_02 := #RDRaw_Data[2];
+	    #PCDRead.PCD_03 := #RDRaw_Data[3];
+	    #PCDRead.PCD_04 := #RDRaw_Data[4];
+	    #PCDRead.PCD_05 := #RDRaw_Data[5];
+	    //------------------------------------Read Raw Data is mapped with PCDRead------------------------------------------------------
+	    
+	    //------------------------------------Extraction of Main actual value--------------------------------------------
+	    // Main Actual Value(MAV) is read from the Drive as 0 - 16384. Must be converted into 0 - 10000 (0.0 - 100.0 %)
+	    IF #UZ.comErr = 0 THEN
+	        #CalcSlope := LREAL_TO_REAL(10000.0 / 16384.0);
+	        #UZ.MAV := INT_TO_REAL(#PCDRead.MAV) / 163.84; // Convert to percentage (0.0 - 100.0)
+	    END_IF;
+	    //------------------------------------Extraction of Main actual value--------------------------------------------
+	    
+	    //------------------------------------Calculation of motor current----------------------------------------------
+	    // Motor current is a 32 bit value hence 2 words read from the Drive need to be combined into a DWORD.
+	    // Motor current is scaled with 2 decimal points (conversion index -2) hence division by 100.
+	    IF #UZ.comErr = 0 THEN
+	        #CurrentInternal := DINT_TO_DWORD(#PCDRead.PCD_02); // PCD02 is high word of Motor current
+	        #CurrentInternal := SHL_DWORD(IN := #CurrentInternal, N := 16); // Shift high word of Motor current 16 bits to the left
+	        #CurrentInternal := #CurrentInternal + DINT_TO_DWORD(#PCDRead.PCD_03); // PCD03 is low word of Motor current
+	        #UZ.MotorCurrent := DINT_TO_REAL(DWORD_TO_DINT(#CurrentInternal)) / 100.0;
+	        
+	        #PowerInternal := DINT_TO_DWORD(#PCDRead.PCD_04);
+	        #PowerInternal := SHL_DWORD(IN := #PowerInternal, N := 16);
+	        #PowerInternal := #PowerInternal + DINT_TO_DWORD(#PCDRead.PCD_05);
+	        #UZ.MotorPower := DINT_TO_REAL(DWORD_TO_DINT(#PowerInternal)) / 100.0;
+	    END_IF;
+	    //------------------------------------Calculation of Motor current----------------------------------------------
+	    
+	    //------------------------------------Mask out Drive status bit's-----------------------------------------------
+	    IF #UZ.comErr = 0 THEN
+	        #UZ.Ready := (#PCDRead.STW.BIT_00_CTRL_RDY AND #PCDRead.STW.BIT_01_DRV_RDY AND #PCDRead.STW.BIT_02_COAST_RDY AND #PCDRead.STW.BIT_09_CTRL_SOURCE); // Drive ready to start from Fieldbus
+	        #UZ.Running := #PCDRead.STW.BIT_11_IN_OPR; // Drive is started but not necessarily running on reference speed.
+	        #UZ.Run_On_ref := #PCDRead.STW.BIT_08_RUNNING_REF; // Running on reference
+	        #UZ.Warning := #PCDRead.STW.BIT_07_WARNING; // Warning present
+	        #UZ.Fault := (#PCDRead.STW.BIT_04_ERROR OR #PCDRead.STW.BIT_03_TRIP OR #PCDRead.STW.BIT_06_TRIPLOCK); // Fault present. Trip or Trip lock
+	    ELSE
+	        #UZ.Ready := FALSE;
+	        #UZ.Fault := TRUE;
+	    END_IF;
+	    //------------------------------------Mask out Drive status bit's-----------------------------------------------
+	    
+	    //------------------------------------Default settings of Controlword-------------------------------------------
+	    // Prepare all Controlword Bit's to default values so that
+	    // they are in a "ready to start" mode. CTW =043Ch
+	    #PCDWrite.CTW.BIT_00_PRESET_REF_1 := FALSE;
+	    #PCDWrite.CTW.BIT_01_PRESET_REF_2 := FALSE;
+	    
+	    IF #DRV_EN THEN
+	        #PCDWrite.CTW.BIT_02_DC_BRAKE_RAMP := TRUE;
+	        #PCDWrite.CTW.BIT_03_COAST_INV := TRUE;
+	        #PCDWrite.CTW.BIT_04_QSTP_RMP := TRUE;
+	        #PCDWrite.CTW.BIT_05_HLD_RMP := TRUE;
+	    ELSE
+	        #PCDWrite.CTW.BIT_02_DC_BRAKE_RAMP := FALSE;
+	        #PCDWrite.CTW.BIT_03_COAST_INV := FALSE;
+	        #PCDWrite.CTW.BIT_04_QSTP_RMP := FALSE;
+	        #PCDWrite.CTW.BIT_05_HLD_RMP := FALSE;
+	    END_IF;
+	    
+	    #PCDWrite.CTW.BIT_06_START := FALSE;
+	    #PCDWrite.CTW.BIT_07_RESET := FALSE;
+	    #PCDWrite.CTW.BIT_08_JOG := FALSE;
+	    #PCDWrite.CTW.BIT_09_RAMP_1_2 := FALSE;
+	    #PCDWrite.CTW.BIT_10_DATA_VALID := TRUE;
+	    #PCDWrite.CTW.BIT_11_RLY_1_ON := FALSE;
+	    #PCDWrite.CTW.BIT_12_RLY_2_ON := FALSE;
+	    #PCDWrite.CTW.BIT_13_SETUP_SEL_1 := FALSE;
+	    #PCDWrite.CTW.BIT_14_SETUP_SEL_2 := FALSE;
+	    #PCDWrite.CTW.BIT_15_REVERSE := FALSE;
+	    //------------------------------------Default settings of Controlword-------------------------------------------
+	    
+	    //------------------------------------Drive control bit's-------------------------------------------------------
+	    #PCDWrite.CTW.BIT_06_START := #RUN AND NOT #UZ.Fault; // Start the Drive if there is no pending Fault.
+	    #PCDWrite.CTW.BIT_15_REVERSE := #REVERSE; // Set Drive to Reverse Mode. Ensure Par. 4-10 is set to "Both Directions"
+	    #PCDWrite.CTW.BIT_07_RESET := #RESET; // Reset pending Fault
+	    //------------------------------------Drive control bit's-------------------------------------------------------
+	    
+	    //------------------------------------Reference value limit check------------------------------------------------
+	    // Must be between 0 - 10000. Ensure reference speed is within limits.
+	    IF #REF_VALUE >= 100.00 THEN
+	        #REF_VALUE := (100.00);
+	    END_IF;
+	    IF #REF_VALUE < 0.0 THEN
+	        #REF_VALUE := 0.0;
+	    END_IF;
+	    //------------------------------------Reference value limit check------------------------------------------------
+	    
+	    //------------------------------------PCDWrite is mapped with WriteRaw data--------------------------------------------------
+	    #WRRaw_Data[0].%X0 := #PCDWrite.CTW.BIT_00_PRESET_REF_1;
+	    #WRRaw_Data[0].%X1 := #PCDWrite.CTW.BIT_01_PRESET_REF_2;
+	    #WRRaw_Data[0].%X2 := #PCDWrite.CTW.BIT_02_DC_BRAKE_RAMP;
+	    #WRRaw_Data[0].%X3 := #PCDWrite.CTW.BIT_03_COAST_INV;
+	    #WRRaw_Data[0].%X4 := #PCDWrite.CTW.BIT_04_QSTP_RMP;
+	    #WRRaw_Data[0].%X5 := #PCDWrite.CTW.BIT_05_HLD_RMP;
+	    #WRRaw_Data[0].%X6 := #PCDWrite.CTW.BIT_06_START;
+	    #WRRaw_Data[0].%X7 := #PCDWrite.CTW.BIT_07_RESET;
+	    #WRRaw_Data[0].%X8 := #PCDWrite.CTW.BIT_08_JOG;
+	    #WRRaw_Data[0].%X9 := #PCDWrite.CTW.BIT_09_RAMP_1_2;
+	    #WRRaw_Data[0].%X10 := #PCDWrite.CTW.BIT_10_DATA_VALID;
+	    #WRRaw_Data[0].%X11 := #PCDWrite.CTW.BIT_11_RLY_1_ON;
+	    #WRRaw_Data[0].%X12 := #PCDWrite.CTW.BIT_12_RLY_2_ON;
+	    #WRRaw_Data[0].%X13 := #PCDWrite.CTW.BIT_13_SETUP_SEL_1;
+	    #WRRaw_Data[0].%X14 := #PCDWrite.CTW.BIT_14_SETUP_SEL_2;
+	    #WRRaw_Data[0].%X15 := #PCDWrite.CTW.BIT_15_REVERSE;
+	    
+	    #WRRaw_Data[2] := #PCDWrite.PCD_02;
+	    #WRRaw_Data[3] := #PCDWrite.PCD_03;
+	    //------------------------------------PCDWrite is mapped with WriteRaw data--------------------------------------------------
+	    
+	    //------------------------------------Reference value limit check------------------------------------------------
+	    // Must be between 0 - 10000. Ensure reference speed is within limits.
+	    IF #REF_VALUE >= 100.00 THEN
+	        #REF_VALUE := 100.00;
+	    END_IF;
+	    IF #REF_VALUE < 0.0 THEN
+	        #REF_VALUE := 0.0;
+	    END_IF;
+	    //------------------------------------Reference value limit check------------------------------------------------
+	    
+	    //------------------------------------Prepare Reference value----------------------------------------------------
+	    // PCD Write block position 1. Fit's with PPO type mapping
+	    // Convert 10000 into 16384 which equals 4000h. 10000 = 100.00%
+	    #CalcSlope := LREAL_TO_REAL(16384.0 / 10000.0);
+	    #PCDWrite.MRV := REAL_TO_INT(#REF_VALUE * 163.84);
+	    //FLOOR_INT(#CalcSlope * #REF_VALUE); // Convert to percentage (0.0 - 100.0)
+	    #WRRaw_Data[1] := #PCDWrite.MRV; // Main reference value is Mapped with write Raw Data
+	    //------------------------------------Prepare Reference value----------------------------------------------------
+	    
+	    //------ADR------------------------------Send Data------------------------------------------------------------------
+	    // Return value for DPRD and DPWR for PNET Comm. 0=No fault
+	    IF #UZ.comErr = 0 THEN
+	        #RETVAL := DPWR_DAT(LADDR := #ADR, RECORD := #WRRaw_Data); //#Write Raw Data);
+	        #UZ.comErr := #RETVAL;
+	    END_IF;
+	    //------------------------------------Send Data------------------------------------------------------------------
+	    
+	    
+	    IF #UZ.comErr = 0 THEN
+	        #UZ.ErrorConnection := 0;
+	    ELSE
+	        #UZ.ErrorConnection := 1;
+	    END_IF;
+	    
+	END_IF;
+	
+	//------------------------------------Ensure ENO is TRUE always--------------------------------------------------
+	ENO := TRUE;
+	//------------------------------------Ensure ENO is TRUE always--------------------------------------------------
+	
+END_FUNCTION
+

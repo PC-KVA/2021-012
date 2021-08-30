@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Document>
+  <Engineering version="V16" />
+  <DocumentInfo>
+    <Created>2021-08-30T10:49:33.8090029Z</Created>
+    <ExportSetting>WithDefaults</ExportSetting>
+    <InstalledProducts>
+      <Product>
+        <DisplayName>Totally Integrated Automation Portal</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>TIA Portal Version Control Interface</DisplayName>
+        <DisplayVersion>V16 Update 2</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>TIA Portal Openness</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>TIA Portal Teamcenter Gateway</DisplayName>
+        <DisplayVersion>V16</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>STEP 7 Professional</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>STEP 7 Safety</DisplayName>
+        <DisplayVersion>V16</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>WinCC Advanced</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </Product>
+    </InstalledProducts>
+  </DocumentInfo>
+  <SW.Blocks.GlobalDB ID="0">
+    <AttributeList>
+      <AutoNumber>true</AutoNumber>
+      <DBAccessibleFromOPCUA>true</DBAccessibleFromOPCUA>
+      <HeaderAuthor />
+      <HeaderFamily />
+      <HeaderName />
+      <HeaderVersion>0.1</HeaderVersion>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v4">
+  <Section Name="Static">
+    <Member Name="UZ30x" Datatype="&quot;UZ_Data&quot;" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="Ready" Datatype="Bool" /><Member Name="Fault" Datatype="Bool" /><Member Name="Warning" Datatype="Bool" /><Member Name="Running" Datatype="Bool" /><Member Name="Run_On_ref" Datatype="Bool" /><Member Name="MotorCurrent" Datatype="Real" /><Member Name="MotorPower" Datatype="Real" /><Member Name="MAV" Datatype="Real" /><Member Name="comErr" Datatype="Int" /><Member Name="ErrorConnection" Datatype="Bool" /></Section></Sections></Member>
+    <Member Name="UZ901" Datatype="&quot;UZ_Data&quot;" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">true</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="Ready" Datatype="Bool" /><Member Name="Fault" Datatype="Bool" /><Member Name="Warning" Datatype="Bool" /><Member Name="Running" Datatype="Bool" /><Member Name="Run_On_ref" Datatype="Bool" /><Member Name="MotorCurrent" Datatype="Real" /><Member Name="MotorPower" Datatype="Real" /><Member Name="MAV" Datatype="Real" /><Member Name="comErr" Datatype="Int" /><Member Name="ErrorConnection" Datatype="Bool" /></Section></Sections></Member>
+    <Member Name="UZ1301" Datatype="&quot;UZ_Data&quot;" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">true</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="Ready" Datatype="Bool" /><Member Name="Fault" Datatype="Bool" /><Member Name="Warning" Datatype="Bool" /><Member Name="Running" Datatype="Bool" /><Member Name="Run_On_ref" Datatype="Bool" /><Member Name="MotorCurrent" Datatype="Real" /><Member Name="MotorPower" Datatype="Real" /><Member Name="MAV" Datatype="Real" /><Member Name="comErr" Datatype="Int" /><Member Name="ErrorConnection" Datatype="Bool" /></Section></Sections></Member>
+    <Member Name="UZ120x" Datatype="&quot;UZ_Data&quot;" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">true</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="Ready" Datatype="Bool" /><Member Name="Fault" Datatype="Bool" /><Member Name="Warning" Datatype="Bool" /><Member Name="Running" Datatype="Bool" /><Member Name="Run_On_ref" Datatype="Bool" /><Member Name="MotorCurrent" Datatype="Real" /><Member Name="MotorPower" Datatype="Real" /><Member Name="MAV" Datatype="Real" /><Member Name="comErr" Datatype="Int" /><Member Name="ErrorConnection" Datatype="Bool" /></Section></Sections></Member>
+    <Member Name="UZ150x" Datatype="&quot;UZ_Data&quot;" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">true</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="Ready" Datatype="Bool" /><Member Name="Fault" Datatype="Bool" /><Member Name="Warning" Datatype="Bool" /><Member Name="Running" Datatype="Bool" /><Member Name="Run_On_ref" Datatype="Bool" /><Member Name="MotorCurrent" Datatype="Real" /><Member Name="MotorPower" Datatype="Real" /><Member Name="MAV" Datatype="Real" /><Member Name="comErr" Datatype="Int" /><Member Name="ErrorConnection" Datatype="Bool" /></Section></Sections></Member>
+  </Section>
+</Sections></Interface>
+      <IsOnlyStoredInLoadMemory>false</IsOnlyStoredInLoadMemory>
+      <IsWriteProtectedInAS>false</IsWriteProtectedInAS>
+      <MemoryLayout>Standard</MemoryLayout>
+      <Name>dtUzData</Name>
+      <Number>7</Number>
+      <ProgrammingLanguage>DB</ProgrammingLanguage>
+    </AttributeList>
+    <ObjectList>
+      <MultilingualText ID="1" CompositionName="Comment">
+        <ObjectList>
+          <MultilingualTextItem ID="2" CompositionName="Items">
+            <AttributeList>
+              <Culture>en-US</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+          <MultilingualTextItem ID="3" CompositionName="Items">
+            <AttributeList>
+              <Culture>ru-RU</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+      <MultilingualText ID="4" CompositionName="Title">
+        <ObjectList>
+          <MultilingualTextItem ID="5" CompositionName="Items">
+            <AttributeList>
+              <Culture>en-US</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+          <MultilingualTextItem ID="6" CompositionName="Items">
+            <AttributeList>
+              <Culture>ru-RU</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+    </ObjectList>
+  </SW.Blocks.GlobalDB>
+</Document>
