@@ -1,0 +1,77 @@
+﻿FUNCTION_BLOCK "HandlerUF"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      permUF : "UF_COMMANDS";
+   END_VAR
+
+   VAR_OUTPUT 
+      inValve : Bool;
+      bwValve : Bool;
+      bwFiltrValve : Bool;
+      outValve : Bool;
+      upDrainValve : Bool;
+      drainTankValve : Bool;
+      drainValve : Bool;
+      airValve : Bool;
+      filtrPump : Bool;
+      acidDPump : Bool;
+      clDPump : Bool;
+   END_VAR
+
+   VAR_IN_OUT 
+      cmUF : Int;
+      bUF : "UF_COMMANDS";
+      flagUF : "UF_FLAGS";
+   END_VAR
+
+   VAR 
+      seq : "Sequencer";
+   END_VAR
+
+
+BEGIN
+	CASE #cmUF OF
+	    "UF_CM_STANDBY":
+	        IF #seq.Enable THEN
+	            #seq.Enable := FALSE;
+	            #seq.RstStep := TRUE;        END_IF;
+	    "UF_CM_WORK":
+	        IF #permUF.Work AND (#flagUF.Stop OR #flagUF.HW OR #flagUF.HWa) THEN
+	            #seq.Seq := "dtUfSeq".start;
+	            #seq.Enable := TRUE;
+	            #seq.RstStep := TRUE;
+	        END_IF;
+	    "UF_CM_STOP":
+	        IF NOT(#flagUF.Stop) THEN
+	            #seq.Seq := "dtUfSeq".stop;
+	            #seq.Enable := TRUE;
+	            #seq.RstStep := TRUE;
+	        END_IF;
+	END_CASE;
+	
+	#seq(Dev1=>#inValve,
+	       Dev2=>#bwValve,
+	       Dev3=>#bwFiltrValve,
+	       Dev4=>#outValve,
+	       Dev5=>#upDrainValve,
+	       Dev6=>#drainTankValve,
+	       Dev7=>#drainValve,
+	       Dev8=>#airValve,
+	       Dev9=>#filtrPump,
+	       Dev10=>#acidDPump,
+	       Dev11=>#clDPump);
+	IF #seq.Done THEN
+	    CASE #cmUF OF
+	        "UF_CM_STANDBY":
+	            ;
+	        "UF_CM_WORK":
+	            #cmUF := "UF_CM_HW";
+	        "UF_CM_STOP":
+	            #cmUF := "UF_CM_STANDBY";
+	    END_CASE;
+	END_IF;
+	
+	
+END_FUNCTION_BLOCK
+
