@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Document>
+  <Engineering version="V16" />
+  <DocumentInfo>
+    <Created>2021-09-02T13:55:33.9462387Z</Created>
+    <ExportSetting>WithDefaults</ExportSetting>
+    <InstalledProducts>
+      <Product>
+        <DisplayName>Totally Integrated Automation Portal</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>TIA Portal Version Control Interface</DisplayName>
+        <DisplayVersion>V16 Update 2</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>TIA Portal Openness</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>TIA Portal Teamcenter Gateway</DisplayName>
+        <DisplayVersion>V16</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>STEP 7 Professional</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>STEP 7 Safety</DisplayName>
+        <DisplayVersion>V16</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>WinCC Advanced</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </Product>
+    </InstalledProducts>
+  </DocumentInfo>
+  <SW.Blocks.InstanceDB ID="0">
+    <AttributeList>
+      <AutoNumber>true</AutoNumber>
+      <DBAccessibleFromOPCUA>true</DBAccessibleFromOPCUA>
+      <HeaderAuthor />
+      <HeaderFamily />
+      <HeaderName />
+      <HeaderVersion>0.1</HeaderVersion>
+      <InstanceOfName>AllUF</InstanceOfName>
+      <InstanceOfType>FB</InstanceOfType>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v4">
+  <Section Name="Input" />
+  <Section Name="Output" />
+  <Section Name="InOut" />
+  <Section Name="Static">
+    <Member Name="inWorkUF" Datatype="USInt" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList></Member>
+    <Member Name="reqNumbWorkUF" Datatype="USInt" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">false</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">false</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList></Member>
+    <Member Name="readyUF" Datatype="Array[0..1] of Bool" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList></Member>
+    <Member Name="workUF" Datatype="Array[0..1] of Bool" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList></Member>
+    <Member Name="cmUF" Datatype="Array[0..1] of Bool" Remanence="NonRetain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList></Member>
+    <Member Name="HandlerUF1" Datatype="&quot;HandlerUF&quot;" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">true</BooleanAttribute></AttributeList><Sections><Section Name="Input"><Member Name="highDeltaPressure" Datatype="Bool" /><Member Name="otherDeviceAvaible" Datatype="Bool" /><Member Name="otherDeviceInFiltration" Datatype="Bool" /><Member Name="filtrationTimeMin" Datatype="Int" /></Section><Section Name="Output"><Member Name="inValve" Datatype="Bool" /><Member Name="bwValve" Datatype="Bool" /><Member Name="bwFiltrValve" Datatype="Bool" /><Member Name="outValve" Datatype="Bool" /><Member Name="upDrainValve" Datatype="Bool" /><Member Name="drainTankValve" Datatype="Bool" /><Member Name="drainValve" Datatype="Bool" /><Member Name="airValve" Datatype="Bool" /><Member Name="filtrPump" Datatype="Bool" /><Member Name="acidDPump" Datatype="Bool" /><Member Name="clDPump" Datatype="Bool" /></Section><Section Name="InOut"><Member Name="flagUF" Datatype="&quot;UF_FLAGS&quot;"><Sections><Section Name="None" /></Sections></Member></Section><Section Name="Static"><Member Name="seq" Datatype="&quot;Sequencer&quot;"><Sections><Section Name="Input" /><Section Name="Output"><Member Name="Dev1" Datatype="Bool" /><Member Name="Dev2" Datatype="Bool" /><Member Name="Dev3" Datatype="Bool" /><Member Name="Dev4" Datatype="Bool" /><Member Name="Dev5" Datatype="Bool" /><Member Name="Dev6" Datatype="Bool" /><Member Name="Dev7" Datatype="Bool" /><Member Name="Dev8" Datatype="Bool" /><Member Name="Dev9" Datatype="Bool" /><Member Name="Dev10" Datatype="Bool" /><Member Name="Dev11" Datatype="Bool" /><Member Name="Dev12" Datatype="Bool" /><Member Name="Dev13" Datatype="Bool" /><Member Name="Dev14" Datatype="Bool" /><Member Name="Dev15" Datatype="Bool" /><Member Name="Dev16" Datatype="Bool" /><Member Name="CurTime" Datatype="Time" /></Section><Section Name="InOut" /><Section Name="Static"><Member Name="Enable" Datatype="Bool" /><Member Name="Hold" Datatype="Bool" /><Member Name="Seq" Datatype="&quot;Sequence&quot;"><Sections><Section Name="None"><Member Name="devOn" Datatype="Array[&quot;MIN_STEP_NUMB&quot;..&quot;MAX_STEP_NUMB&quot;, &quot;MIN_DEV_NUMB&quot;..&quot;MAX_DEV_NUMB&quot;] of Bool" /><Member Name="delay" Datatype="Array[&quot;MIN_STEP_NUMB&quot;..&quot;MAX_STEP_NUMB&quot;] of Int" /></Section></Sections></Member><Member Name="RstStep" Datatype="Bool" /><Member Name="Step" Datatype="Int" /><Member Name="Timer_IN" Datatype="Bool" /><Member Name="Done" Datatype="Bool" /><Member Name="tmr" Datatype="&quot;TON_200ms&quot;"><Sections><Section Name="Input"><Member Name="In" Datatype="Bool" /><Member Name="PT" Datatype="Time" /></Section><Section Name="Output"><Member Name="ET" Datatype="Time" /><Member Name="Q" Datatype="Bool" /></Section><Section Name="InOut" /><Section Name="Static" /></Sections></Member></Section></Sections></Member><Member Name="cmUF" Datatype="Int" /><Member Name="bUF" Datatype="&quot;UF_COMMANDS&quot;"><Sections><Section Name="None"><Member Name="Start" Datatype="Bool" /><Member Name="Stop" Datatype="Bool" /><Member Name="HW" Datatype="Bool" /><Member Name="HW_A" Datatype="Bool" /><Member Name="CEB1" Datatype="Bool" /><Member Name="CEB1_A" Datatype="Bool" /><Member Name="CEB2" Datatype="Bool" /><Member Name="CEB2_A" Datatype="Bool" /></Section></Sections></Member><Member Name="permUF" Datatype="&quot;UF_COMMANDS&quot;"><Sections><Section Name="None"><Member Name="Start" Datatype="Bool" /><Member Name="Stop" Datatype="Bool" /><Member Name="HW" Datatype="Bool" /><Member Name="HW_A" Datatype="Bool" /><Member Name="CEB1" Datatype="Bool" /><Member Name="CEB1_A" Datatype="Bool" /><Member Name="CEB2" Datatype="Bool" /><Member Name="CEB2_A" Datatype="Bool" /></Section></Sections></Member><Member Name="filtration" Datatype="&quot;TONR_200ms&quot;"><Sections><Section Name="Input"><Member Name="In" Datatype="Bool" /><Member Name="PT" Datatype="Time" /><Member Name="R" Datatype="Bool" /></Section><Section Name="Output"><Member Name="ET" Datatype="Time" /><Member Name="Q" Datatype="Bool" /></Section><Section Name="InOut" /><Section Name="Static" /></Sections></Member></Section></Sections></Member>
+    <Member Name="HandlerUF2" Datatype="&quot;HandlerUF&quot;" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">true</BooleanAttribute></AttributeList><Sections><Section Name="Input"><Member Name="highDeltaPressure" Datatype="Bool" /><Member Name="otherDeviceAvaible" Datatype="Bool" /><Member Name="otherDeviceInFiltration" Datatype="Bool" /><Member Name="filtrationTimeMin" Datatype="Int" /></Section><Section Name="Output"><Member Name="inValve" Datatype="Bool" /><Member Name="bwValve" Datatype="Bool" /><Member Name="bwFiltrValve" Datatype="Bool" /><Member Name="outValve" Datatype="Bool" /><Member Name="upDrainValve" Datatype="Bool" /><Member Name="drainTankValve" Datatype="Bool" /><Member Name="drainValve" Datatype="Bool" /><Member Name="airValve" Datatype="Bool" /><Member Name="filtrPump" Datatype="Bool" /><Member Name="acidDPump" Datatype="Bool" /><Member Name="clDPump" Datatype="Bool" /></Section><Section Name="InOut"><Member Name="flagUF" Datatype="&quot;UF_FLAGS&quot;"><Sections><Section Name="None" /></Sections></Member></Section><Section Name="Static"><Member Name="seq" Datatype="&quot;Sequencer&quot;"><Sections><Section Name="Input" /><Section Name="Output"><Member Name="Dev1" Datatype="Bool" /><Member Name="Dev2" Datatype="Bool" /><Member Name="Dev3" Datatype="Bool" /><Member Name="Dev4" Datatype="Bool" /><Member Name="Dev5" Datatype="Bool" /><Member Name="Dev6" Datatype="Bool" /><Member Name="Dev7" Datatype="Bool" /><Member Name="Dev8" Datatype="Bool" /><Member Name="Dev9" Datatype="Bool" /><Member Name="Dev10" Datatype="Bool" /><Member Name="Dev11" Datatype="Bool" /><Member Name="Dev12" Datatype="Bool" /><Member Name="Dev13" Datatype="Bool" /><Member Name="Dev14" Datatype="Bool" /><Member Name="Dev15" Datatype="Bool" /><Member Name="Dev16" Datatype="Bool" /><Member Name="CurTime" Datatype="Time" /></Section><Section Name="InOut" /><Section Name="Static"><Member Name="Enable" Datatype="Bool" /><Member Name="Hold" Datatype="Bool" /><Member Name="Seq" Datatype="&quot;Sequence&quot;"><Sections><Section Name="None"><Member Name="devOn" Datatype="Array[&quot;MIN_STEP_NUMB&quot;..&quot;MAX_STEP_NUMB&quot;, &quot;MIN_DEV_NUMB&quot;..&quot;MAX_DEV_NUMB&quot;] of Bool" /><Member Name="delay" Datatype="Array[&quot;MIN_STEP_NUMB&quot;..&quot;MAX_STEP_NUMB&quot;] of Int" /></Section></Sections></Member><Member Name="RstStep" Datatype="Bool" /><Member Name="Step" Datatype="Int" /><Member Name="Timer_IN" Datatype="Bool" /><Member Name="Done" Datatype="Bool" /><Member Name="tmr" Datatype="&quot;TON_200ms&quot;"><Sections><Section Name="Input"><Member Name="In" Datatype="Bool" /><Member Name="PT" Datatype="Time" /></Section><Section Name="Output"><Member Name="ET" Datatype="Time" /><Member Name="Q" Datatype="Bool" /></Section><Section Name="InOut" /><Section Name="Static" /></Sections></Member></Section></Sections></Member><Member Name="cmUF" Datatype="Int" /><Member Name="bUF" Datatype="&quot;UF_COMMANDS&quot;"><Sections><Section Name="None"><Member Name="Start" Datatype="Bool" /><Member Name="Stop" Datatype="Bool" /><Member Name="HW" Datatype="Bool" /><Member Name="HW_A" Datatype="Bool" /><Member Name="CEB1" Datatype="Bool" /><Member Name="CEB1_A" Datatype="Bool" /><Member Name="CEB2" Datatype="Bool" /><Member Name="CEB2_A" Datatype="Bool" /></Section></Sections></Member><Member Name="permUF" Datatype="&quot;UF_COMMANDS&quot;"><Sections><Section Name="None"><Member Name="Start" Datatype="Bool" /><Member Name="Stop" Datatype="Bool" /><Member Name="HW" Datatype="Bool" /><Member Name="HW_A" Datatype="Bool" /><Member Name="CEB1" Datatype="Bool" /><Member Name="CEB1_A" Datatype="Bool" /><Member Name="CEB2" Datatype="Bool" /><Member Name="CEB2_A" Datatype="Bool" /></Section></Sections></Member><Member Name="filtration" Datatype="&quot;TONR_200ms&quot;"><Sections><Section Name="Input"><Member Name="In" Datatype="Bool" /><Member Name="PT" Datatype="Time" /><Member Name="R" Datatype="Bool" /></Section><Section Name="Output"><Member Name="ET" Datatype="Time" /><Member Name="Q" Datatype="Bool" /></Section><Section Name="InOut" /><Section Name="Static" /></Sections></Member></Section></Sections></Member>
+  </Section>
+</Sections></Interface>
+      <Name>AllUF_DB</Name>
+      <Number>17</Number>
+      <ProgrammingLanguage>DB</ProgrammingLanguage>
+    </AttributeList>
+    <ObjectList>
+      <MultilingualText ID="1" CompositionName="Comment">
+        <ObjectList>
+          <MultilingualTextItem ID="2" CompositionName="Items">
+            <AttributeList>
+              <Culture>en-US</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+          <MultilingualTextItem ID="3" CompositionName="Items">
+            <AttributeList>
+              <Culture>ru-RU</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+      <MultilingualText ID="4" CompositionName="Title">
+        <ObjectList>
+          <MultilingualTextItem ID="5" CompositionName="Items">
+            <AttributeList>
+              <Culture>en-US</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+          <MultilingualTextItem ID="6" CompositionName="Items">
+            <AttributeList>
+              <Culture>ru-RU</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+    </ObjectList>
+  </SW.Blocks.InstanceDB>
+</Document>
