@@ -9,17 +9,19 @@ VERSION : 0.1
    END_VAR
 
    VAR_OUTPUT 
-      inValve : Bool;
-      bwValve : Bool;
-      bwFiltrValve : Bool;
-      outValve : Bool;
-      upDrainValve : Bool;
-      drainTankValve : Bool;
-      drainValve : Bool;
-      airValve : Bool;
-      filtrPump : Bool;
-      acidDPump : Bool;
-      clDPump : Bool;
+      inValve_1 : Bool;
+      ownBwValve_2 : Bool;
+      otherBwValve_3 : Bool;
+      backFiltrValve_4 : Bool;
+      clouseOtherOutValve_5 : Bool;
+      outValve_6 : Bool;
+      upDrainValve_7 : Bool;
+      drainTankValve_8 : Bool;
+      drainValve_9 : Bool;
+      airValve_10 : Bool;
+      filtrPump_11 : Bool;
+      acidDPump_12 : Bool;
+      clDPump_13 : Bool;
    END_VAR
 
    VAR_IN_OUT 
@@ -27,8 +29,11 @@ VERSION : 0.1
    END_VAR
 
    VAR 
-      seq : "Sequencer";
       cmUF : Int;
+      needHW : Bool;
+      needCEB1 : Bool;
+      needCEB2 : Bool;
+      seq : "Sequencer";
       bUF { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'; S7_SetPoint := 'False'} : "UF_COMMANDS";
       permUF { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'; S7_SetPoint := 'False'} : "UF_COMMANDS";
       filtration : "TONR_200ms";
@@ -89,7 +94,7 @@ BEGIN
 	            END_IF;
 	        "UF_CM_HW_A":
 	            #seq.Seq := "dtUfSeq".HW_A;
-	            IF NOT (#flagUF.HW) THEN
+	            IF NOT (#flagUF.HW_A) THEN
 	                "RST_UF_FLAGS"(#flagUF);
 	                #flagUF.HW_A := TRUE;
 	                #seq.Enable := TRUE;
@@ -104,22 +109,24 @@ BEGIN
 	                R := #tRstFiltration);
 	END_REGION
 	REGION Hold sequencer
-	    #tHoldBW := #bwValve AND #flagUF.HW AND NOT(#otherDeviceInFiltration);
+	    #tHoldBW := #ownBwValve_2 AND #flagUF.HW AND NOT(#otherDeviceInFiltration);
 	    #seq.Hold := #tHoldBW;
 	END_REGION
 	REGION Sequencer
-	    #seq(Dev1 => #inValve,
-	         Dev2 => #bwValve,
-	         Dev3 => #bwFiltrValve,
-	         Dev4 => #outValve,
-	         Dev5 => #upDrainValve,
-	         Dev6 => #drainTankValve,
-	         Dev7 => #drainValve,
-	         Dev8 => #airValve,
-	         Dev9 => #filtrPump,
-	         Dev10 => #acidDPump,
-	         Dev11 => #clDPump);
-	      END_REGION
+	    #seq(Dev1 => #inValve_1,
+	         Dev2 => #ownBwValve_2,
+	         Dev3 => #otherBwValve_3,
+	         Dev4 => #backFiltrValve_4,
+	         Dev5 => #clouseOtherOutValve_5,
+	         Dev6 => #outValve_6,
+	         Dev7 => #upDrainValve_7,
+	         Dev8 => #drainTankValve_8,
+	         Dev9 => #drainValve_9,
+	         Dev10 => #airValve_10,
+	         Dev11 => #filtrPump_11,
+	         Dev12 => #acidDPump_12,
+	         Dev13 => #clDPump_13);
+	END_REGION
 	REGION Action after sequence done
 	      IF #seq.Done OR #filtration.Q THEN
 	          #tCmUF := #cmUF;
@@ -129,19 +136,30 @@ BEGIN
 	              "UF_CM_START":
 	                  #tCmUF := "UF_CM_FILTRATION";
 	              "UF_CM_FILTRATION":
-	                  IF #otherDeviceAvaible THEN
-	                      #tCmUF := "UF_CM_HW";
-	                  ELSE
-	                      #tCmUF := "UF_CM_HW_A";
-	                  END_IF;
-	              "UF_CM_STOP",
-	              "UF_CM_HW",
-	              "UF_CM_HW_A",
+	                  #tCmUF := "UF_CM_STOP";
+	                  #needHW := TRUE;
+	              "UF_CM_STOP":
+	                IF #needHW THEN
+	                    IF #otherDeviceAvaible THEN
+	                        #tCmUF := "UF_CM_HW";
+	                    ELSE
+	                        #tCmUF := "UF_CM_HW_A";
+	                    END_IF;
+	                ELSIF #needCEB1 THEN
+	                    ;
+	                ELSIF #needCEB1 THEN
+	                    ;
+	                ELSE
+	                    #tCmUF := "UF_CM_STANDBY";
+	                END_IF;
+	              "UF_CM_HW", "UF_CM_HW_A":
+	                #needHW := FALSE;
+	                #tCmUF := "UF_CM_STANDBY";
 	              "UF_CM_CEB1",
 	              "UF_CM_CEB1_A",
 	              "UF_CM_CEB2",
 	              "UF_CM_CEB2_A":
-	                  #tCmUF := "UF_CM_STANDBY";
+	                #tCmUF := "UF_CM_STANDBY";
 	          END_CASE;
 	          #cmUF := #tCmUF;
 	      END_IF;
