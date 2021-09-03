@@ -2,10 +2,12 @@
 { S7_Optimized_Access := 'TRUE' }
 VERSION : 0.1
    VAR_INPUT 
-      highDeltaPressure : Bool;
+      HDP : Bool;
       otherDeviceAvaible : Bool;
       otherDeviceInFiltration : Bool;
-      filtrationTimeMin : Int;
+      filtrationTimeMin : UInt;
+      delayHDP : UInt;
+      maxNumbHW_ByHDP : UInt;
    END_VAR
 
    VAR_OUTPUT 
@@ -33,10 +35,15 @@ VERSION : 0.1
       needHW : Bool;
       needCEB1 : Bool;
       needCEB2 : Bool;
+      wasCEB1 : Bool;
+      wasCEB2 : Bool;
+      alarmHDP : Bool;
+      numbHW_ByHDP : UInt;
       seq : "Sequencer";
       bUF { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'; S7_SetPoint := 'False'} : "UF_COMMANDS";
       permUF { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'; S7_SetPoint := 'False'} : "UF_COMMANDS";
       filtration : "TONR_200ms";
+      tmrHDP : "TON_200ms";
    END_VAR
 
    VAR_TEMP 
@@ -47,6 +54,10 @@ VERSION : 0.1
 
 
 BEGIN
+	REGION High preassure difference
+	    #tmrHDP(In:=#flagUF.Filtration AND #HDP,
+	            PT:= "intToTime_1"(intTime:=#delayHDP, select:=0));
+	END_REGION
 	REGION Action before sequence
 	    CASE #cmUF OF
 	        "UF_CM_STANDBY":
@@ -128,42 +139,80 @@ BEGIN
 	         Dev13 => #clDPump_13);
 	END_REGION
 	REGION Action after sequence done
-	      IF #seq.Done OR #filtration.Q THEN
-	          #tCmUF := #cmUF;
-	          CASE #cmUF OF
-	              "UF_CM_STANDBY":
-	                  ;
-	              "UF_CM_START":
-	                  #tCmUF := "UF_CM_FILTRATION";
-	              "UF_CM_FILTRATION":
+	    IF #seq.Done OR #filtration.Q OR #tmrHDP.Q THEN
+	      #tCmUF := #cmUF;
+	      CASE #cmUF OF
+	          "UF_CM_STANDBY":
+	              ;
+	          "UF_CM_START":
+	              #tCmUF := "UF_CM_FILTRATION";
+	          "UF_CM_FILTRATION":
+	              //Afte filtration done -> HW
+	              IF #filtration.Q THEN
 	                  #tCmUF := "UF_CM_STOP";
 	                  #needHW := TRUE;
-	              "UF_CM_STOP":
-	                IF #needHW THEN
-	                    IF #otherDeviceAvaible THEN
-	                        #tCmUF := "UF_CM_HW";
-	                    ELSE
-	                        #tCmUF := "UF_CM_HW_A";
-	                    END_IF;
-	                ELSIF #needCEB1 THEN
-	                    ;
-	                ELSIF #needCEB1 THEN
-	                    ;
+	                  #numbHW_ByHDP := 0;
+	                  #wasCEB1 := FALSE;
+	                  #wasCEB2 := FALSE;
+	              END_IF;
+	              //When high delta preassure -> HW or CEB1 or CEB2 or Alarm by HDP
+	              IF #tmrHDP.Q THEN
+	                  #tCmUF := "UF_CM_STOP";
+	                  IF #numbHW_ByHDP < #maxNumbHW_ByHDP THEN
+	                      #needHW := TRUE;
+	                      #numbHW_ByHDP += 1;
+	                  ELSE
+	                      IF #wasCEB1 THEN
+	                          IF #needCEB2 THEN
+	                              #alarmHDP := TRUE;
+	                          ELSE
+	                              #needCEB2 := TRUE;
+	                          END_IF;
+	                      ELSE
+	                          #needCEB1 := TRUE;
+	                      END_IF;
+	                  END_IF;
+	              END_IF;
+	          "UF_CM_STOP":
+	            IF #alarmHDP THEN
+	                #tCmUF := "UF_CM_STANDBY";
+	            ELSIF #needHW THEN
+	                IF #otherDeviceAvaible THEN
+	                    #tCmUF := "UF_CM_HW";
 	                ELSE
-	                    #tCmUF := "UF_CM_STANDBY";
+	                    #tCmUF := "UF_CM_HW_A";
 	                END_IF;
-	              "UF_CM_HW", "UF_CM_HW_A":
-	                #needHW := FALSE;
+	            ELSIF #needCEB1 THEN
+	                IF #otherDeviceAvaible THEN
+	                    #tCmUF := "UF_CM_CEB1";
+	                ELSE
+	                    #tCmUF := "UF_CM_CEB1_A";
+	                END_IF;
+	            ELSIF #needCEB2 THEN
+	                IF #otherDeviceAvaible THEN
+	                    #tCmUF := "UF_CM_CEB2";
+	                ELSE
+	                    #tCmUF := "UF_CM_CEB2_A";
+	                END_IF;
+	            ELSE
 	                #tCmUF := "UF_CM_STANDBY";
-	              "UF_CM_CEB1",
-	              "UF_CM_CEB1_A",
-	              "UF_CM_CEB2",
-	              "UF_CM_CEB2_A":
-	                #tCmUF := "UF_CM_STANDBY";
-	          END_CASE;
-	          #cmUF := #tCmUF;
-	      END_IF;
-	  END_REGION
+	            END_IF;
+	          "UF_CM_HW",
+	          "UF_CM_HW_A":
+	            #needHW := FALSE;
+	            #tCmUF := "UF_CM_STANDBY";
+	          "UF_CM_CEB1",
+	          "UF_CM_CEB1_A":
+	              #needCEB1 := FALSE;
+	              #tCmUF := "UF_CM_STANDBY";
+	          "UF_CM_CEB2",
+	          "UF_CM_CEB2_A":
+	              #needCEB2 := FALSE;
+	              #tCmUF := "UF_CM_STANDBY";
+	      END_CASE;
+	      #cmUF := #tCmUF;
+	    END_IF;
+	END_REGION
 	  
 END_FUNCTION_BLOCK
 

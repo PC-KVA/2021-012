@@ -132,36 +132,14 @@ BEGIN
 	    "dtAV".DVA504.cmAuto := #HandlerUF1.ownBwValve_2 OR #HandlerUF2.otherBwValve_3;
 	    "dtAV".DVA511.cmAuto := #HandlerUF2.ownBwValve_2 OR #HandlerUF1.otherBwValve_3;
 	END_REGION
-	REGION Clouse filtrate valve when other UF washing
+	REGION Filtrate valve
 	    //UF1
-	    IF #HandlerUF2.clouseOtherOutValve_5
-	        AND
-	        ("dtUF".flagUF2.HW OR "dtUF".flagUF2.CEB1 OR "dtUF".flagUF2.CEB2)
-	    THEN
-	        "dtAV".DVA505.cmAuto := FALSE;
-	    ELSE
-	        "dtAV".DVA505.cmAuto := #HandlerUF1.outValve_6;
-	    END_IF;
+	    "dtAV".DVA505.cmAuto := #HandlerUF1.outValve_6
+	    AND NOT (#HandlerUF2.clouseOtherOutValve_5 AND ("dtUF".flagUF2.HW OR "dtUF".flagUF2.CEB1 OR "dtUF".flagUF2.CEB2));
 	    //UF2
-	    IF #HandlerUF1.clouseOtherOutValve_5
-	        AND
-	        ("dtUF".flagUF1.HW OR "dtUF".flagUF1.CEB1 OR "dtUF".flagUF1.CEB2)
-	    THEN
-	        "dtAV".DVA513.cmAuto := FALSE;
-	    ELSE
-	        "dtAV".DVA513.cmAuto := #HandlerUF2.outValve_6;
-	    END_IF;
+	    "dtAV".DVA513.cmAuto := #HandlerUF2.outValve_6
+	    AND NOT (#HandlerUF1.clouseOtherOutValve_5 AND ("dtUF".flagUF1.HW OR "dtUF".flagUF1.CEB1 OR "dtUF".flagUF1.CEB2));
 	END_REGION
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 END_FUNCTION_BLOCK
 
