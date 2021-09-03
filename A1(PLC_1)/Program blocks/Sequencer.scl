@@ -24,16 +24,15 @@ VERSION : 0.1
    VAR 
       Enable : Bool;
       Hold : Bool;
-      Seq : "Sequence";
+      Seq : "Sequence" := ([TRUE], [3(1)]);
       RstStep { S7_SetPoint := 'True'} : Bool := TRUE;
       Step : Int := "MIN_STEP_NUMB";
       Timer_IN { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'} : Bool;
       Done : Bool;
-      tmr : "tmr200ms";
+      tmr : "TON_200ms";
    END_VAR
 
    VAR_TEMP 
-      tStepDelay : Time;
       tAddStep : Bool;
    END_VAR
 
@@ -42,15 +41,6 @@ BEGIN
 	// Управление 16-ю механизмами в зависимости 
 	// от заданной последовательности Seq 
 	
-	REGION Init step time
-	    IF #Seq.delayInMin[#Step] THEN
-	        #tStepDelay := "intToTime_1"(intTime := #Seq.delay[#Step], select := 1);
-	    ELSE
-	        #tStepDelay := "intToTime_1"(intTime := #Seq.delay[#Step], select := 0);
-	    END_IF;
-	END_REGION
-	
-	//
 	IF #RstStep THEN
 	    #Step := "MIN_STEP_NUMB";
 	    #Timer_IN := FALSE;
@@ -59,10 +49,10 @@ BEGIN
 	END_IF;
 	
 	#tmr(In := #Timer_IN,
-	     PT := #tStepDelay);
+	     PT := "intToTime_1"(intTime := #Seq.delay[#Step], select := 0));
 	
 	#Timer_IN := #Enable AND (NOT (#tmr.Q OR #Hold OR #Done));
-	#CurTime := #tStepDelay - #tmr.ET;
+	#CurTime := #tmr.PT - #tmr.ET;
 	
 	//Переход к след. шагу
 	IF #tmr.Q AND (NOT #Hold) AND (NOT #Done) THEN
@@ -70,36 +60,37 @@ BEGIN
 	END_IF;
 	
 	IF #Enable THEN //Пропуск шагов с нулевой задержкой
-	    WHILE #tStepDelay = t#0s DO
+	    WHILE #Seq.delay[#Step] = 0 DO
 	        IF #Step >= "MAX_STEP_NUMB" THEN
 	            EXIT;
 	        END_IF;
-	        #Step += 1;
+	       #Step += 1;
 	    END_WHILE;
 	END_IF;
 	
 	
 	//Конец последовательности
 	IF #Step >= "MAX_STEP_NUMB" THEN
-	    #Done := TRUE;
+	    #Done := #Enable;
+	    RETURN;
 	END_IF;
 	
-	#Dev1 := #Seq.devOn[#Step, 1] AND #Enable;
-	#Dev2 := #Seq.devOn[#Step, 2] AND #Enable;
-	#Dev3 := #Seq.devOn[#Step, 3] AND #Enable;
-	#Dev4 := #Seq.devOn[#Step, 4] AND #Enable;
-	#Dev5 := #Seq.devOn[#Step, 5] AND #Enable;
-	#Dev6 := #Seq.devOn[#Step, 6] AND #Enable;
-	#Dev7 := #Seq.devOn[#Step, 7] AND #Enable;
-	#Dev8 := #Seq.devOn[#Step, 8] AND #Enable;
-	#Dev9 := #Seq.devOn[#Step, 9] AND #Enable;
-	#Dev10 := #Seq.devOn[#Step, 10] AND #Enable;
-	#Dev11 := #Seq.devOn[#Step, 11] AND #Enable;
-	#Dev12 := #Seq.devOn[#Step, 12] AND #Enable;
-	#Dev13 := #Seq.devOn[#Step, 13] AND #Enable;
-	#Dev14 := #Seq.devOn[#Step, 14] AND #Enable;
-	#Dev15 := #Seq.devOn[#Step, 15] AND #Enable;
-	#Dev16 := #Seq.devOn[#Step, 16] AND #Enable;
+	#Dev1 := #Seq.devOn[#Step, 1];
+	#Dev2 := #Seq.devOn[#Step, 2];
+	#Dev3 := #Seq.devOn[#Step, 3];
+	#Dev4 := #Seq.devOn[#Step, 4];
+	#Dev5 := #Seq.devOn[#Step, 5];
+	#Dev6 := #Seq.devOn[#Step, 6];
+	#Dev7 := #Seq.devOn[#Step, 7];
+	#Dev8 := #Seq.devOn[#Step, 8];
+	#Dev9 := #Seq.devOn[#Step, 9];
+	#Dev10 := #Seq.devOn[#Step, 10];
+	#Dev11 := #Seq.devOn[#Step, 11];
+	#Dev12 := #Seq.devOn[#Step, 12];
+	#Dev13 := #Seq.devOn[#Step, 13];
+	#Dev14 := #Seq.devOn[#Step, 14];
+	#Dev15 := #Seq.devOn[#Step, 15];
+	#Dev16 := #Seq.devOn[#Step, 16];
 	
 	
 	

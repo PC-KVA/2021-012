@@ -2,7 +2,10 @@
 { S7_Optimized_Access := 'TRUE' }
 VERSION : 0.1
    VAR_INPUT 
-      permUF : "UF_COMMANDS";
+      highDeltaPressure : Bool;
+      otherDeviceAvaible : Bool;
+      otherDeviceInFiltration : Bool;
+      filtrationTimeMin : Int;
    END_VAR
 
    VAR_OUTPUT 
@@ -20,58 +23,129 @@ VERSION : 0.1
    END_VAR
 
    VAR_IN_OUT 
-      cmUF : Int;
-      bUF : "UF_COMMANDS";
       flagUF : "UF_FLAGS";
    END_VAR
 
    VAR 
       seq : "Sequencer";
+      cmUF : Int;
+      bUF { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'; S7_SetPoint := 'False'} : "UF_COMMANDS";
+      permUF { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'; S7_SetPoint := 'False'} : "UF_COMMANDS";
+      filtration : "TONR_200ms";
+   END_VAR
+
+   VAR_TEMP 
+      tCmUF : Int;
+      tRstFiltration : Bool;
+      tHoldBW : Bool;
    END_VAR
 
 
 BEGIN
-	CASE #cmUF OF
-	    "UF_CM_STANDBY":
-	        IF #seq.Enable THEN
-	            #seq.Enable := FALSE;
-	            #seq.RstStep := TRUE;        END_IF;
-	    "UF_CM_WORK":
-	        IF #permUF.Work AND (#flagUF.Stop OR #flagUF.HW OR #flagUF.HWa) THEN
-	            #seq.Seq := "dtUfSeq".start;
-	            #seq.Enable := TRUE;
-	            #seq.RstStep := TRUE;
-	        END_IF;
-	    "UF_CM_STOP":
-	        IF NOT(#flagUF.Stop) THEN
-	            #seq.Seq := "dtUfSeq".stop;
-	            #seq.Enable := TRUE;
-	            #seq.RstStep := TRUE;
-	        END_IF;
-	END_CASE;
-	
-	#seq(Dev1=>#inValve,
-	       Dev2=>#bwValve,
-	       Dev3=>#bwFiltrValve,
-	       Dev4=>#outValve,
-	       Dev5=>#upDrainValve,
-	       Dev6=>#drainTankValve,
-	       Dev7=>#drainValve,
-	       Dev8=>#airValve,
-	       Dev9=>#filtrPump,
-	       Dev10=>#acidDPump,
-	       Dev11=>#clDPump);
-	IF #seq.Done THEN
+	REGION Action before sequence
 	    CASE #cmUF OF
 	        "UF_CM_STANDBY":
-	            ;
-	        "UF_CM_WORK":
-	            #cmUF := "UF_CM_HW";
+	            IF NOT (#flagUF.StandBy)
+	            THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.StandBy := TRUE;
+	                #seq.Enable := FALSE;
+	                #seq.RstStep := TRUE;
+	            END_IF;
+	        "UF_CM_START":
+	            #seq.Seq := "dtUfSeq".START;
+	            IF NOT (#flagUF.Start)
+	            THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.Start := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	            END_IF;
+	        "UF_CM_FILTRATION":
+	            IF NOT (#flagUF.Filtration)
+	            THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.Filtration := TRUE;
+	                #seq.Enable := FALSE;
+	                #seq.Done := FALSE;
+	            END_IF;
 	        "UF_CM_STOP":
-	            #cmUF := "UF_CM_STANDBY";
+	            #seq.Seq := "dtUfSeq".STOP;
+	            IF NOT (#flagUF.Stop)
+	            THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.Stop := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	            END_IF;
+	        "UF_CM_HW":
+	            #seq.Seq := "dtUfSeq".HW;
+	            IF NOT (#flagUF.HW) THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.HW := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	                #tRstFiltration := TRUE;
+	            END_IF;
+	        "UF_CM_HW_A":
+	            #seq.Seq := "dtUfSeq".HW_A;
+	            IF NOT (#flagUF.HW) THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.HW_A := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	                #tRstFiltration := TRUE;
+	            END_IF;
 	    END_CASE;
-	END_IF;
-	
-	
+	END_REGION
+	REGION Filtration
+	    #filtration(In := #flagUF.Filtration,
+	                PT := "intToTime_1"(intTime := #filtrationTimeMin, select := 1),
+	                R := #tRstFiltration);
+	END_REGION
+	REGION Hold sequencer
+	    #tHoldBW := #bwValve AND #flagUF.HW AND NOT(#otherDeviceInFiltration);
+	    #seq.Hold := #tHoldBW;
+	END_REGION
+	REGION Sequencer
+	    #seq(Dev1 => #inValve,
+	         Dev2 => #bwValve,
+	         Dev3 => #bwFiltrValve,
+	         Dev4 => #outValve,
+	         Dev5 => #upDrainValve,
+	         Dev6 => #drainTankValve,
+	         Dev7 => #drainValve,
+	         Dev8 => #airValve,
+	         Dev9 => #filtrPump,
+	         Dev10 => #acidDPump,
+	         Dev11 => #clDPump);
+	      END_REGION
+	REGION Action after sequence done
+	      IF #seq.Done OR #filtration.Q THEN
+	          #tCmUF := #cmUF;
+	          CASE #cmUF OF
+	              "UF_CM_STANDBY":
+	                  ;
+	              "UF_CM_START":
+	                  #tCmUF := "UF_CM_FILTRATION";
+	              "UF_CM_FILTRATION":
+	                  IF #otherDeviceAvaible THEN
+	                      #tCmUF := "UF_CM_HW";
+	                  ELSE
+	                      #tCmUF := "UF_CM_HW_A";
+	                  END_IF;
+	              "UF_CM_STOP",
+	              "UF_CM_HW",
+	              "UF_CM_HW_A",
+	              "UF_CM_CEB1",
+	              "UF_CM_CEB1_A",
+	              "UF_CM_CEB2",
+	              "UF_CM_CEB2_A":
+	                  #tCmUF := "UF_CM_STANDBY";
+	          END_CASE;
+	          #cmUF := #tCmUF;
+	      END_IF;
+	  END_REGION
+	  
 END_FUNCTION_BLOCK
 

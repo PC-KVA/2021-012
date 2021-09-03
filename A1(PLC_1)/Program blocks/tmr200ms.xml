@@ -2,7 +2,7 @@
 <Document>
   <Engineering version="V16" />
   <DocumentInfo>
-    <Created>2021-09-01T08:19:43.2338242Z</Created>
+    <Created>2021-09-02T13:55:52.7916427Z</Created>
     <ExportSetting>WithDefaults</ExportSetting>
     <InstalledProducts>
       <Product>
@@ -60,7 +60,7 @@
       <IsRetainMemResEnabled>false</IsRetainMemResEnabled>
       <MemoryLayout>Optimized</MemoryLayout>
       <MemoryReserve>100</MemoryReserve>
-      <Name>tmr200ms</Name>
+      <Name>TON_200ms</Name>
       <Number>9</Number>
       <ProgrammingLanguage>FBD</ProgrammingLanguage>
       <SetENOAutomatically>false</SetENOAutomatically>

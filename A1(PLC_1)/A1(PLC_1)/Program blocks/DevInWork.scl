@@ -19,6 +19,7 @@ VERSION : 0.1
       i : DInt;
       tReadyDev : DInt;
       tWorkDev : DInt;
+      tElemetsInArray : DInt;
    END_VAR
 
 
@@ -36,14 +37,19 @@ BEGIN
 	        #tUBound <> UPPER_BOUND(ARR := #DevCm, DIM := 1) THEN
 	        #ErrNotSameBound := TRUE;
 	    END_IF;
+	    //Get count of elemets
+	    FOR #i := #tLBound TO #tUBound DO
+	        #tElemetsInArray += 1;
+	    END_FOR;
+	    
 	END_REGION
 	REGION Check #ReqNumbWorkDev
 	    #tReqNumbWorkDev := #ReqNumbWorkDev;
 	    IF #tReqNumbWorkDev < 0 THEN
 	        #tReqNumbWorkDev := 0;
 	    END_IF;
-	    IF #tReqNumbWorkDev > #tUBound THEN
-	        #tReqNumbWorkDev := #tUBound;
+	    IF #tReqNumbWorkDev > #tElemetsInArray THEN
+	        #tReqNumbWorkDev := #tElemetsInArray;
 	    END_IF;
 	END_REGION
 	REGION Count ready device
@@ -63,7 +69,7 @@ BEGIN
 	REGION Set device command
 	    IF #tReqNumbWorkDev <> #tWorkDev THEN
 	        FOR #i := #tLBound TO #tUBound DO
-	            IF NOT(#ReadyDev[#i]) THEN
+	            IF #ReadyDev[#i] THEN
 	                IF #tReqNumbWorkDev > 0 THEN
 	                    #DevCm[#i] := TRUE;
 	                    #tReqNumbWorkDev -= 1;
@@ -76,9 +82,12 @@ BEGIN
 	        END_FOR;
 	    END_IF;
 	    //If bounds not same
-	    FOR #i := #tLBound TO #tUBound DO
-	        #DevCm[#i] := FALSE;
-	    END_FOR;
+	    IF #ErrNotSameBound THEN
+	        FOR #i := #tLBound TO #tUBound DO
+	            #DevCm[#i] := FALSE;
+	        END_FOR;
+	    END_IF;
+	
 	END_REGION
 	
 	
