@@ -35,8 +35,8 @@ VERSION : 0.1
       needHW : Bool;
       needCEB1 : Bool;
       needCEB2 : Bool;
-      wasCEB1 : Bool;
-      wasCEB2 : Bool;
+      CEB1_ByHDP : Bool;
+      CEB2_ByHDP : Bool;
       alarmHDP : Bool;
       numbHW_ByHDP : UInt;
       seq : "Sequencer";
@@ -54,10 +54,6 @@ VERSION : 0.1
 
 
 BEGIN
-	REGION High preassure difference
-	    #tmrHDP(In:=#flagUF.Filtration AND #HDP,
-	            PT:= "intToTime_1"(intTime:=#delayHDP, select:=0));
-	END_REGION
 	REGION Action before sequence
 	    CASE #cmUF OF
 	        "UF_CM_STANDBY":
@@ -112,7 +108,47 @@ BEGIN
 	                #seq.RstStep := TRUE;
 	                #tRstFiltration := TRUE;
 	            END_IF;
+	        "UF_CM_CEB1":
+	            #seq.Seq := "dtUfSeq".CEB1;
+	            IF NOT (#flagUF.CEB1) THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.CEB1 := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	                #tRstFiltration := TRUE;
+	            END_IF;
+	        "UF_CM_CEB1_A":
+	            #seq.Seq := "dtUfSeq".CEB1_A;
+	            IF NOT (#flagUF.CEB1_A) THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.CEB1_A := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	                #tRstFiltration := TRUE;
+	            END_IF;
+	        "UF_CM_CEB2":
+	            #seq.Seq := "dtUfSeq".CEB2;
+	            IF NOT (#flagUF.CEB2) THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.CEB2 := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	                #tRstFiltration := TRUE;
+	            END_IF;
+	        "UF_CM_CEB2_A":
+	            #seq.Seq := "dtUfSeq".CEB2_A;
+	            IF NOT (#flagUF.CEB2_A) THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.CEB2_A := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	                #tRstFiltration := TRUE;
+	            END_IF;
 	    END_CASE;
+	END_REGION
+	REGION High preassure difference
+	    #tmrHDP(In := #flagUF.Filtration AND #HDP,
+	            PT := "intToTime_1"(intTime := #delayHDP, select := 0));
 	END_REGION
 	REGION Filtration
 	    #filtration(In := #flagUF.Filtration,
@@ -148,27 +184,32 @@ BEGIN
 	              #tCmUF := "UF_CM_FILTRATION";
 	          "UF_CM_FILTRATION":
 	              //Afte filtration done -> HW
+	              #tCmUF := "UF_CM_STOP";
 	              IF #filtration.Q THEN
-	                  #tCmUF := "UF_CM_STOP";
 	                  #needHW := TRUE;
 	                  #numbHW_ByHDP := 0;
-	                  #wasCEB1 := FALSE;
-	                  #wasCEB2 := FALSE;
+	                  #CEB1_ByHDP := FALSE;
+	                  #CEB2_ByHDP := FALSE;
 	              END_IF;
 	              //When high delta preassure -> HW or CEB1 or CEB2 or Alarm by HDP
 	              IF #tmrHDP.Q THEN
-	                  #tCmUF := "UF_CM_STOP";
-	                  IF #numbHW_ByHDP < #maxNumbHW_ByHDP THEN
+	                  #numbHW_ByHDP += 1;
+	                  //Do HW befor counter less max number
+	                  IF #numbHW_ByHDP <= #maxNumbHW_ByHDP THEN
 	                      #needHW := TRUE;
-	                      #numbHW_ByHDP += 1;
 	                  ELSE
-	                      IF #wasCEB1 THEN
-	                          IF #needCEB2 THEN
+	                      //Do CEB1 when counter more then max number
+	                      IF #CEB1_ByHDP THEN
+	                          //Do CEB2 after CEB1
+	                          IF #CEB2_ByHDP THEN
+	                              //Alarm after CEB2
 	                              #alarmHDP := TRUE;
 	                          ELSE
+	                              #CEB2_ByHDP := TRUE;
 	                              #needCEB2 := TRUE;
 	                          END_IF;
 	                      ELSE
+	                          #CEB1_ByHDP := TRUE;
 	                          #needCEB1 := TRUE;
 	                      END_IF;
 	                  END_IF;
@@ -176,6 +217,9 @@ BEGIN
 	          "UF_CM_STOP":
 	            IF #alarmHDP THEN
 	                #tCmUF := "UF_CM_STANDBY";
+	                #alarmHDP := #needHW := #needCEB1 := #needCEB2 := FALSE;
+	                #numbHW_ByHDP := 0;
+	                #flagUF.ErrHDP := TRUE;
 	            ELSIF #needHW THEN
 	                IF #otherDeviceAvaible THEN
 	                    #tCmUF := "UF_CM_HW";
@@ -199,8 +243,8 @@ BEGIN
 	            END_IF;
 	          "UF_CM_HW",
 	          "UF_CM_HW_A":
-	            #needHW := FALSE;
-	            #tCmUF := "UF_CM_STANDBY";
+	              #needHW := FALSE;
+	              #tCmUF := "UF_CM_STANDBY";
 	          "UF_CM_CEB1",
 	          "UF_CM_CEB1_A":
 	              #needCEB1 := FALSE;
@@ -213,6 +257,15 @@ BEGIN
 	      #cmUF := #tCmUF;
 	    END_IF;
 	END_REGION
+	REGION Error flag
+	    #flagUF.Err :=
+	    #flagUF.ErrWork
+	    OR #flagUF.ErrHW
+	    OR #flagUF.ErrCEB1
+	    OR #flagUF.ErrCEB2
+	    OR #flagUF.ErrHDP;
+	END_REGION
+	
 	  
 END_FUNCTION_BLOCK
 
