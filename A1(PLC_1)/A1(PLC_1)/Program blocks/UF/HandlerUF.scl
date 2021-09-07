@@ -8,6 +8,8 @@ VERSION : 0.1
       filtrationTimeMin : UInt;
       delayHDP : UInt;
       maxNumbHW_ByHDP : UInt;
+      HW_ToCEB1 : UInt;
+      HW_ToCEB2 : UInt;
    END_VAR
 
    VAR_OUTPUT 
@@ -28,6 +30,8 @@ VERSION : 0.1
 
    VAR_IN_OUT 
       flagUF : "UF_FLAGS";
+      counters : "UF_PARAMETRS";
+      bUF : "UF_COMMANDS";
    END_VAR
 
    VAR 
@@ -38,10 +42,7 @@ VERSION : 0.1
       CEB1_ByHDP : Bool;
       CEB2_ByHDP : Bool;
       alarmHDP : Bool;
-      numbHW_ByHDP : UInt;
       seq : "Sequencer";
-      bUF { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'; S7_SetPoint := 'False'} : "UF_COMMANDS";
-      permUF { ExternalAccessible := 'False'; ExternalVisible := 'False'; ExternalWritable := 'False'; S7_SetPoint := 'False'} : "UF_COMMANDS";
       filtration : "TONR_200ms";
       tmrHDP : "TON_200ms";
    END_VAR
@@ -73,7 +74,7 @@ BEGIN
 	                #seq.Enable := TRUE;
 	                #seq.RstStep := TRUE;
 	            END_IF;
-	        "UF_CM_FILTRATION":
+	        "UF_CM_FILTRATION": //Stop sequencer in filtration (realize outside custom filtration timer)
 	            IF NOT (#flagUF.Filtration)
 	            THEN
 	                "RST_UF_FLAGS"(#flagUF);
@@ -93,56 +94,69 @@ BEGIN
 	        "UF_CM_HW":
 	            #seq.Seq := "dtUfSeq".HW;
 	            IF NOT (#flagUF.HW) THEN
-	                "RST_UF_FLAGS"(#flagUF);
-	                #flagUF.HW := TRUE;
-	                #seq.Enable := TRUE;
-	                #seq.RstStep := TRUE;
-	                #tRstFiltration := TRUE;
+	                IF NOT(#bUF.HW) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.HW := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
 	            END_IF;
 	        "UF_CM_HW_A":
 	            #seq.Seq := "dtUfSeq".HW_A;
 	            IF NOT (#flagUF.HW_A) THEN
-	                "RST_UF_FLAGS"(#flagUF);
-	                #flagUF.HW_A := TRUE;
-	                #seq.Enable := TRUE;
-	                #seq.RstStep := TRUE;
-	                #tRstFiltration := TRUE;
+	                IF NOT(#bUF.HW) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.HW_A := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
 	            END_IF;
 	        "UF_CM_CEB1":
 	            #seq.Seq := "dtUfSeq".CEB1;
 	            IF NOT (#flagUF.CEB1) THEN
-	                "RST_UF_FLAGS"(#flagUF);
-	                #flagUF.CEB1 := TRUE;
-	                #seq.Enable := TRUE;
-	                #seq.RstStep := TRUE;
-	                #tRstFiltration := TRUE;
+	                IF NOT(#flagUF.CEB1) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.CEB1 := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
 	            END_IF;
 	        "UF_CM_CEB1_A":
 	            #seq.Seq := "dtUfSeq".CEB1_A;
 	            IF NOT (#flagUF.CEB1_A) THEN
-	                "RST_UF_FLAGS"(#flagUF);
-	                #flagUF.CEB1_A := TRUE;
-	                #seq.Enable := TRUE;
-	                #seq.RstStep := TRUE;
-	                #tRstFiltration := TRUE;
+	                IF NOT(#flagUF.CEB1_A) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.CEB1_A := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
 	            END_IF;
 	        "UF_CM_CEB2":
 	            #seq.Seq := "dtUfSeq".CEB2;
 	            IF NOT (#flagUF.CEB2) THEN
-	                "RST_UF_FLAGS"(#flagUF);
-	                #flagUF.CEB2 := TRUE;
-	                #seq.Enable := TRUE;
-	                #seq.RstStep := TRUE;
-	                #tRstFiltration := TRUE;
+	                IF NOT (#flagUF.CEB1) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.CEB2 := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
 	            END_IF;
 	        "UF_CM_CEB2_A":
 	            #seq.Seq := "dtUfSeq".CEB2_A;
 	            IF NOT (#flagUF.CEB2_A) THEN
-	                "RST_UF_FLAGS"(#flagUF);
-	                #flagUF.CEB2_A := TRUE;
-	                #seq.Enable := TRUE;
-	                #seq.RstStep := TRUE;
-	                #tRstFiltration := TRUE;
+	                IF NOT (#flagUF.CEB2_A) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.CEB2_A := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
+	
 	            END_IF;
 	    END_CASE;
 	END_REGION
@@ -152,7 +166,7 @@ BEGIN
 	END_REGION
 	REGION Filtration
 	    #filtration(In := #flagUF.Filtration,
-	                PT := "intToTime_1"(intTime := #filtrationTimeMin, select := 1),
+	                PT := "intToTime_1"(intTime := #filtrationTimeMin, select := 0),
 	                R := #tRstFiltration);
 	END_REGION
 	REGION Hold sequencer
@@ -178,79 +192,97 @@ BEGIN
 	    IF #seq.Done OR #filtration.Q OR #tmrHDP.Q THEN
 	      #tCmUF := #cmUF;
 	      CASE #cmUF OF
-	          "UF_CM_STANDBY":
+	          "UF_CM_STANDBY": // After standby -> nothing
 	              ;
-	          "UF_CM_START":
+	          "UF_CM_START": //After start -> filtration
 	              #tCmUF := "UF_CM_FILTRATION";
-	          "UF_CM_FILTRATION":
-	              //Afte filtration done -> HW
-	              #tCmUF := "UF_CM_STOP";
-	              IF #filtration.Q THEN
-	                  #needHW := TRUE;
-	                  #numbHW_ByHDP := 0;
-	                  #CEB1_ByHDP := FALSE;
-	                  #CEB2_ByHDP := FALSE;
-	              END_IF;
-	              //When high delta preassure -> HW or CEB1 or CEB2 or Alarm by HDP
-	              IF #tmrHDP.Q THEN
-	                  #numbHW_ByHDP += 1;
-	                  //Do HW befor counter less max number
-	                  IF #numbHW_ByHDP <= #maxNumbHW_ByHDP THEN
-	                      #needHW := TRUE;
-	                  ELSE
-	                      //Do CEB1 when counter more then max number
-	                      IF #CEB1_ByHDP THEN
-	                          //Do CEB2 after CEB1
-	                          IF #CEB2_ByHDP THEN
-	                              //Alarm after CEB2
-	                              #alarmHDP := TRUE;
-	                          ELSE
-	                              #CEB2_ByHDP := TRUE;
-	                              #needCEB2 := TRUE;
-	                          END_IF;
-	                      ELSE
-	                          #CEB1_ByHDP := TRUE;
-	                          #needCEB1 := TRUE;
-	                      END_IF;
+	          "UF_CM_FILTRATION": //After filtration...
+	              IF #otherDeviceAvaible THEN //Permition for stop
+	                  IF NOT (#bUF.HW OR #bUF.CEB1 OR #bUF.CEB2) THEN //Simple HW
+	                      #tCmUF := "UF_CM_STOP";
+	                  END_IF;
+	              ELSE
+	                  IF NOT (#bUF.HW_A OR #bUF.CEB1_A OR #bUF.CEB2_A) THEN // Custom HW
+	                      #tCmUF := "UF_CM_STOP";
 	                  END_IF;
 	              END_IF;
-	          "UF_CM_STOP":
-	            IF #alarmHDP THEN
+	              IF #tCmUF = "UF_CM_STOP" THEN // only after permition
+	                  IF #filtration.Q THEN //Filtration done...
+	                      #counters.HDPW := 0; //RST HDP counters and flags
+	                      #CEB1_ByHDP := #CEB2_ByHDP := FALSE;
+	                      IF #counters.HW >= #HW_ToCEB2 THEN // -> CEB2
+	                          #needCEB2 := TRUE;
+	                      ELSIF #counters.HW = (#HW_ToCEB1 * (#counters.CEB1 + 1)) THEN // -> CEB1
+	                          #needCEB1 := TRUE;
+	                      ELSE // -> HW
+	                          #needHW := TRUE;
+	                      END_IF;
+	                  END_IF;
+	                  IF #tmrHDP.Q THEN //When high delta preassure -> HW -> max count of HW -> CEB1 -> CEB2 -> alarm
+	                    #counters.HDPW += 1;
+	                    IF #counters.HDPW <= #maxNumbHW_ByHDP THEN
+	                        #needHW := TRUE;
+	                    ELSE
+	                        IF #CEB1_ByHDP THEN //Do CEB1 when counter more then max number
+	                              IF #CEB2_ByHDP THEN //Do CEB2 after CEB1; Again CEB2 by HDP -> alarm
+	                                #alarmHDP := TRUE;
+	                            ELSE
+	                                #CEB2_ByHDP := TRUE;
+	                                #needCEB2 := TRUE;
+	                            END_IF;
+	                        ELSE
+	                            #CEB1_ByHDP := TRUE;
+	                            #needCEB1 := TRUE;
+	                        END_IF;
+	                    END_IF;
+	                END_IF;
+	            END_IF;
+	          "UF_CM_STOP": //Stop...
+	            IF #alarmHDP THEN //by HDP alarm -> standby
 	                #tCmUF := "UF_CM_STANDBY";
-	                #alarmHDP := #needHW := #needCEB1 := #needCEB2 := FALSE;
-	                #numbHW_ByHDP := 0;
+	                #alarmHDP :=
+	//                #needHW :=
+	//                #needCEB1 :=
+	//                #needCEB2 :=
+	                #CEB1_ByHDP := 
+	                #CEB2_ByHDP := FALSE;
+	                #counters.HDPW := 0;
 	                #flagUF.ErrHDP := TRUE;
-	            ELSIF #needHW THEN
+	            ELSIF #needHW THEN //by request HW -> HW/HW_A
+	                #counters.HW += 1;
 	                IF #otherDeviceAvaible THEN
 	                    #tCmUF := "UF_CM_HW";
 	                ELSE
 	                    #tCmUF := "UF_CM_HW_A";
 	                END_IF;
-	            ELSIF #needCEB1 THEN
+	            ELSIF #needCEB1 THEN //by request CEB1 -> CEB1/CEB1_A
+	                #counters.CEB1 += 1;
 	                IF #otherDeviceAvaible THEN
 	                    #tCmUF := "UF_CM_CEB1";
 	                ELSE
 	                    #tCmUF := "UF_CM_CEB1_A";
 	                END_IF;
-	            ELSIF #needCEB2 THEN
+	            ELSIF #needCEB2 THEN //by request CEB2 -> CEB2/CEB2_A
+	                #counters.HW := #counters.CEB1 := 0;
+	                #counters.CEB2 += 1;
 	                IF #otherDeviceAvaible THEN
 	                    #tCmUF := "UF_CM_CEB2";
 	                ELSE
 	                    #tCmUF := "UF_CM_CEB2_A";
 	                END_IF;
-	            ELSE
+	            ELSE //simple stop -> standby
 	                #tCmUF := "UF_CM_STANDBY";
 	            END_IF;
 	          "UF_CM_HW",
-	          "UF_CM_HW_A":
+	          "UF_CM_HW_A": //HW -> Standby
 	              #needHW := FALSE;
 	              #tCmUF := "UF_CM_STANDBY";
 	          "UF_CM_CEB1",
-	          "UF_CM_CEB1_A":
+	          "UF_CM_CEB1_A": //CEB1 -> Standby
 	              #needCEB1 := FALSE;
 	              #tCmUF := "UF_CM_STANDBY";
 	          "UF_CM_CEB2",
-	          "UF_CM_CEB2_A":
+	          "UF_CM_CEB2_A": //CEB2 -> Standby
 	              #needCEB2 := FALSE;
 	              #tCmUF := "UF_CM_STANDBY";
 	      END_CASE;

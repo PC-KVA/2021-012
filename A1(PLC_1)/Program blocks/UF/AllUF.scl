@@ -106,12 +106,58 @@ BEGIN
 	        #HandlerUF2.cmUF := "UF_CM_STOP";
 	    END_IF;
 	END_REGION
+	REGION Block wash
+	    //UF1
+	    "dtUF".bUF2.HW :=
+	    "dtUF".bUF2.CEB1 :=
+	    "dtUF".bUF2.CEB2 :=
+	    "dtUF".flagUF2.HW
+	    OR "dtUF".flagUF2.HW_A
+	    OR "dtUF".flagUF2.CEB1
+	    OR "dtUF".flagUF2.CEB1_A
+	    OR "dtUF".flagUF2.CEB2
+	    OR "dtUF".flagUF2.CEB2_A;
+	    
+	    "dtUF".bUF2.HW_A :=
+	    "dtUF".bUF2.CEB1_A :=
+	    "dtUF".bUF2.CEB2_A :=
+	    "dtUF".flagUF2.HW
+	//    OR ("dtAnalogData".et_data["iwLT601"].Par <= "dtParmUF".minFiltrLevForWash)
+	    OR "dtUF".flagUF2.HW_A
+	    OR "dtUF".flagUF2.CEB1
+	    OR "dtUF".flagUF2.CEB1_A
+	    OR "dtUF".flagUF2.CEB2
+	    OR "dtUF".flagUF2.CEB2_A;
+	
+	    //UF2
+	    "dtUF".bUF2.HW :=
+	    "dtUF".bUF2.CEB1 :=
+	    "dtUF".bUF2.CEB2 :=
+	    "dtUF".flagUF1.HW
+	    OR "dtUF".flagUF1.HW_A
+	    OR "dtUF".flagUF1.CEB1
+	    OR "dtUF".flagUF1.CEB1_A
+	    OR "dtUF".flagUF1.CEB2
+	    OR "dtUF".flagUF1.CEB2_A;
+	    
+	    "dtUF".bUF2.HW_A :=
+	    "dtUF".bUF2.CEB1_A :=
+	    "dtUF".bUF2.CEB2_A :=
+	    "dtUF".flagUF1.HW
+	//   OR ("dtAnalogData".et_data["iwLT601"].Par <= "dtParmUF".minFiltrLevForWash)
+	    OR "dtUF".flagUF1.HW_A
+	    OR "dtUF".flagUF1.CEB1
+	    OR "dtUF".flagUF1.CEB1_A
+	    OR "dtUF".flagUF1.CEB2
+	    OR "dtUF".flagUF1.CEB2_A;
+	END_REGION
+	
 	REGION UF handlers
-	    #HandlerUF1(otherDeviceAvaible := #readyUF[#UF2],
+	    #HandlerUF1(// HDP := ("dtAnalogData".et_data["iwPT502"].Par - "dtAnalogData".et_data["iwPT503"].Par) >= "dtParmUF".valHDP_ForHW,
+	                otherDeviceAvaible := #readyUF[#UF2],
 	                otherDeviceInFiltration := "dtUF".flagUF2.Filtration,
 	                filtrationTimeMin := "dtParmUF".filtrationTime,
 	                flagUF := "dtUF".flagUF1,
-	//                HDP := ("dtAnalogData".et_data["iwPT502"].Par - "dtAnalogData".et_data["iwPT503"].Par) >= "dtParmUF".valHDP_ForHW,
 	                delayHDP := "dtParmUF".delayHDP,
 	                maxNumbHW_ByHDP := "dtParmUF".maxNumbHW_ByHDP,
 	                inValve_1 => "dtAV".DVA503.cmAuto,
@@ -119,12 +165,16 @@ BEGIN
 	                upDrainValve_7 => "dtAV".DVA507.cmAuto,
 	                drainTankValve_8 => "dtAV".DVA508.cmAuto,
 	                drainValve_9 => "dtAV".DVA509.cmAuto,
-	                airValve_10 => "dtAV".DVA501.cmAuto);
-	    #HandlerUF2(otherDeviceAvaible := #readyUF[#UF1],
+	                airValve_10 => "dtAV".DVA501.cmAuto,
+	                counters:="dtUF".countersUF1,
+	                bUF:="dtUF".bUF1,
+	                HW_ToCEB1 := "dtParmUF".HW_ToCEB1,
+	                HW_ToCEB2 := "dtParmUF".HW_ToCEB2);
+	    #HandlerUF2(//HDP := ("dtAnalogData".et_data["iwPT505"].Par - "dtAnalogData".et_data["iwPT506"].Par) >= "dtParmUF".valHDP_ForHW,
+	                otherDeviceAvaible := #readyUF[#UF1],
 	                otherDeviceInFiltration := "dtUF".flagUF1.Filtration,
 	                filtrationTimeMin := "dtParmUF".filtrationTime,
 	                flagUF := "dtUF".flagUF2,
-	//                HDP := ("dtAnalogData".et_data["iwPT505"].Par - "dtAnalogData".et_data["iwPT506"].Par) >= "dtParmUF".valHDP_ForHW,
 	                delayHDP := "dtParmUF".delayHDP,
 	                maxNumbHW_ByHDP := "dtParmUF".maxNumbHW_ByHDP,
 	                inValve_1 => "dtAV".DVA510.cmAuto,
@@ -132,7 +182,11 @@ BEGIN
 	                upDrainValve_7 => "dtAV".DVA514.cmAuto,
 	                drainTankValve_8 => "dtAV".DVA515.cmAuto,
 	                drainValve_9 => "dtAV".DVA516.cmAuto,
-	                airValve_10 => "dtAV".DVA502.cmAuto);
+	                airValve_10 => "dtAV".DVA502.cmAuto,
+	                counters:="dtUF".countersUF2,
+	                bUF:="dtUF".bUF2,
+	                HW_ToCEB1 := "dtParmUF".HW_ToCEB1,
+	                HW_ToCEB2 := "dtParmUF".HW_ToCEB2);
 	END_REGION
 	REGION Back wash valves
 	    "dtAV".DVA504.cmAuto := #HandlerUF1.ownBwValve_2 OR #HandlerUF2.otherBwValve_3;
