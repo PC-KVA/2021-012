@@ -30,12 +30,14 @@ VERSION : 0.1
 
    VAR_IN_OUT 
       flagUF : "UF_FLAGS";
-      counters : "UF_PARAMETRS";
+      counters : "UF_COUNTERS";
       bUF : "UF_COMMANDS";
+      SoftStopSeq : "Sequence";
    END_VAR
 
    VAR 
       cmUF : Int;
+      needSoftStop : Bool;
       needHW : Bool;
       needCEB1 : Bool;
       needCEB2 : Bool;
@@ -48,6 +50,8 @@ VERSION : 0.1
    END_VAR
 
    VAR_TEMP 
+      i : Int;
+      j : Int;
       tCmUF : Int;
       tRstFiltration : Bool;
       tHoldBW : Bool;
@@ -74,7 +78,7 @@ BEGIN
 	                #seq.Enable := TRUE;
 	                #seq.RstStep := TRUE;
 	            END_IF;
-	        "UF_CM_FILTRATION": //Stop sequencer in filtration (realize outside custom filtration timer)
+	        "UF_CM_FILTRATION":
 	            IF NOT (#flagUF.Filtration)
 	            THEN
 	                "RST_UF_FLAGS"(#flagUF);
@@ -83,7 +87,11 @@ BEGIN
 	                #seq.Done := FALSE;
 	            END_IF;
 	        "UF_CM_STOP":
-	            #seq.Seq := "dtUfSeq".STOP;
+	            IF #needSoftStop THEN
+	                #seq.Seq := #SoftStopSeq;
+	            ELSE
+	                #seq.Seq := "dtUfSeq".STOP;
+	            END_IF;
 	            IF NOT (#flagUF.Stop)
 	            THEN
 	                "RST_UF_FLAGS"(#flagUF);
@@ -157,6 +165,60 @@ BEGIN
 	                    #tRstFiltration := TRUE;
 	                END_IF;
 	
+	            END_IF;
+	    END_CASE;
+	END_REGION
+	REGION Soft stop HW, CEB1, CEB2 (if wash was interrupt by dissable other UF)
+	    CASE #cmUF OF
+	        "UF_CM_HW",
+	        "UF_CM_CEB1",
+	        "UF_CM_CEB2":
+	            IF NOT (#otherDeviceAvaible) THEN
+	                #cmUF := "UF_CM_STOP";
+	                #needSoftStop := TRUE;
+	                //Build sequence
+	                FOR #i := "MIN_STEP_NUMB" TO 5 DO
+	                    CASE #i OF
+	                        1:  // Turn off pumps
+	                            #SoftStopSeq.devOn[#i] := #seq.Seq.devOn[#seq.Step];
+	                            #SoftStopSeq.devOn[#i, 11] := FALSE; //filtrate pump 
+	                            #SoftStopSeq.devOn[#i, 12] := FALSE; //acid
+	                            #SoftStopSeq.devOn[#i, 13] := FALSE; //clorine
+	                            #SoftStopSeq.devOn[#i + 1] := #SoftStopSeq.devOn[#i];
+	                        2: // Clouse in valves.
+	                            #SoftStopSeq.devOn[#i, 1] := FALSE; //in valve
+	                            #SoftStopSeq.devOn[#i, 4] := FALSE; //back filtrate valve.
+	                            #SoftStopSeq.devOn[#i, 5] := FALSE; //Turn off command to clouse other UF out valve
+	                            #SoftStopSeq.devOn[#i, 10] := FALSE; //air
+	                            #SoftStopSeq.devOn[#i + 1] := #SoftStopSeq.devOn[#i];
+	                        3: //Clouse valves...
+	                            #SoftStopSeq.devOn[#i, 2] := FALSE; //own bw
+	                            #SoftStopSeq.devOn[#i, 3] := FALSE; //other bw
+	                            #SoftStopSeq.devOn[#i, 6] := FALSE; //out
+	                            #SoftStopSeq.devOn[#i, 8] := FALSE; //drain to tank
+	                            #SoftStopSeq.devOn[#i + 1] := #SoftStopSeq.devOn[#i];
+	                        4: //Clouse valves...
+	                            #SoftStopSeq.devOn[#i, 9] := FALSE; //drain
+	                            #SoftStopSeq.devOn[#i, 7] := FALSE; //up drain
+	                        5: //Turn off all
+	                            #SoftStopSeq.devOn[#i, 1] :=
+	                            #SoftStopSeq.devOn[#i, 2] :=
+	                            #SoftStopSeq.devOn[#i, 3] :=
+	                            #SoftStopSeq.devOn[#i, 4] :=
+	                            #SoftStopSeq.devOn[#i, 5] :=
+	                            #SoftStopSeq.devOn[#i, 6] :=
+	                            #SoftStopSeq.devOn[#i, 7] :=
+	                            #SoftStopSeq.devOn[#i, 8] :=
+	                            #SoftStopSeq.devOn[#i, 9] :=
+	                            #SoftStopSeq.devOn[#i, 10] :=
+	                            #SoftStopSeq.devOn[#i, 11] :=
+	                            #SoftStopSeq.devOn[#i, 12] :=
+	                            #SoftStopSeq.devOn[#i, 13] :=
+	                            #SoftStopSeq.devOn[#i, 14] :=
+	                            #SoftStopSeq.devOn[#i, 15] :=
+	                            #SoftStopSeq.devOn[#i, 16] := FALSE;
+	                    END_CASE;
+	                END_FOR;
 	            END_IF;
 	    END_CASE;
 	END_REGION
@@ -238,7 +300,8 @@ BEGIN
 	                END_IF;
 	            END_IF;
 	          "UF_CM_STOP": //Stop...
-	            IF #alarmHDP THEN //by HDP alarm -> standby
+	              #needSoftStop := FALSE;
+	             IF #alarmHDP THEN //by HDP alarm -> standby
 	                #tCmUF := "UF_CM_STANDBY";
 	                #alarmHDP :=
 	//                #needHW :=

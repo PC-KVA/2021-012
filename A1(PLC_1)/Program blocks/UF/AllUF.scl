@@ -82,8 +82,8 @@ BEGIN
 	    "dtUF".flagUF2.CEB2_A
 	    );
 	    
-	    #workUF[#UF1] := "dtUF".flagUF1.Filtration;
-	    #workUF[#UF2] := "dtUF".flagUF2.Filtration;
+	    #workUF[#UF1] := "dtUF".flagUF1.Filtration AND #readyUF[#UF1];
+	    #workUF[#UF2] := "dtUF".flagUF2.Filtration AND #readyUF[#UF2];
 	END_REGION
 	REGION Select work UF
 	    "DevInWork"(ReqNumbWorkDev := #reqNumbWorkUF,
@@ -169,7 +169,8 @@ BEGIN
 	                counters:="dtUF".countersUF1,
 	                bUF:="dtUF".bUF1,
 	                HW_ToCEB1 := "dtParmUF".HW_ToCEB1,
-	                HW_ToCEB2 := "dtParmUF".HW_ToCEB2);
+	                HW_ToCEB2 := "dtParmUF".HW_ToCEB2,
+	                SoftStopSeq := "dtUfSeq".SOFT_STOP_UF1);
 	    #HandlerUF2(//HDP := ("dtAnalogData".et_data["iwPT505"].Par - "dtAnalogData".et_data["iwPT506"].Par) >= "dtParmUF".valHDP_ForHW,
 	                otherDeviceAvaible := #readyUF[#UF1],
 	                otherDeviceInFiltration := "dtUF".flagUF1.Filtration,
@@ -186,13 +187,14 @@ BEGIN
 	                counters:="dtUF".countersUF2,
 	                bUF:="dtUF".bUF2,
 	                HW_ToCEB1 := "dtParmUF".HW_ToCEB1,
-	                HW_ToCEB2 := "dtParmUF".HW_ToCEB2);
+	                HW_ToCEB2 := "dtParmUF".HW_ToCEB2,
+	                SoftStopSeq := "dtUfSeq".SOFT_STOP_UF2);
 	END_REGION
-	REGION Back wash valves
+	REGION Backwash valves
 	    "dtAV".DVA504.cmAuto := #HandlerUF1.ownBwValve_2 OR #HandlerUF2.otherBwValve_3;
 	    "dtAV".DVA511.cmAuto := #HandlerUF2.ownBwValve_2 OR #HandlerUF1.otherBwValve_3;
 	END_REGION
-	REGION Filtrate valve
+	REGION Filtrate valves
 	    //UF1
 	    "dtAV".DVA505.cmAuto := #HandlerUF1.outValve_6
 	    AND NOT (#HandlerUF2.clouseOtherOutValve_5 AND ("dtUF".flagUF2.HW OR "dtUF".flagUF2.CEB1 OR "dtUF".flagUF2.CEB2));
@@ -200,6 +202,14 @@ BEGIN
 	    "dtAV".DVA513.cmAuto := #HandlerUF2.outValve_6
 	    AND NOT (#HandlerUF1.clouseOtherOutValve_5 AND ("dtUF".flagUF1.HW OR "dtUF".flagUF1.CEB1 OR "dtUF".flagUF1.CEB2));
 	END_REGION
+	REGION Display time
+	    "dtUF".parUF1.Tf := TIME_TO_UDINT(IN := #HandlerUF1.filtration.PT - #HandlerUF1.filtration.ET) / 1000;
+	    "dtUF".parUF2.Tf := TIME_TO_UDINT(IN := #HandlerUF2.filtration.PT - #HandlerUF2.filtration.ET) / 1000;
+	    
+	    "dtUF".parUF1.Ts := TIME_TO_UINT(IN := #HandlerUF1.seq.CurTime) / 1000;
+	    "dtUF".parUF2.Ts := TIME_TO_UINT(IN := #HandlerUF2.seq.CurTime) / 1000;
+	END_REGION
+	
 	
 END_FUNCTION_BLOCK
 
