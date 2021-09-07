@@ -1,0 +1,44 @@
+﻿FUNCTION_BLOCK "AllUfParam"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR 
+      mSec : USInt;
+      sec : UInt;
+      inVolumeUF1 : Real;
+      inVolumeUF2 : Real;
+      outVolumeUF1 : Real;
+      outVolumeUF2 : Real;
+   END_VAR
+
+   VAR CONSTANT 
+      RECOVERY_PERIOD : UInt := 7200;
+   END_VAR
+
+
+BEGIN
+	//Cycle Time is 0.1 sec
+	//
+	REGION Recovery timer
+	    #mSec += 1;
+	    IF #mSec >= 10 THEN
+	        #mSec := 0;
+	        #sec += 1;
+	    END_IF;
+	    IF #sec >= #RECOVERY_PERIOD THEN
+	        #sec := 0;
+	        #inVolumeUF1 := "dbVolumeCounters".FM501.all;
+	        #inVolumeUF2 := "dbVolumeCounters".FM502.all;
+	        // #outVolumeUF1 := ;
+	        // #outVolumeUF2 := ;
+	    END_IF;
+	END_REGION
+	"dtUF".parUF1.flux := "Flux"("inFlow(m3/h)" := "dtAnalogData".et_data["iwFM501"].Par,
+	                             "Sfiltr(m2)" := "dtUF".parUF1.Sf);
+	"dtUF".parUF2.flux := "Flux"("inFlow(m3/h)" := "dtAnalogData".et_data["iwFM502"].Par,
+	                             "Sfiltr(m2)" := "dtUF".parUF2.Sf);
+	"dtUF".parUF1.dP := "dtAnalogData".et_data["iwPT502"].Par - "dtAnalogData".et_data["iwPT503"].Par;
+	"dtUF".parUF2.dP := "dtAnalogData".et_data["iwPT505"].Par - "dtAnalogData".et_data["iwPT506"].Par;
+	"dtUF".parUF1.Rec := "Recovery"(inVolume := #inVolumeUF1, outVolume := #outVolumeUF1);
+	"dtUF".parUF2.Rec := "Recovery"(inVolume := #inVolumeUF2, outVolume := #outVolumeUF2);
+END_FUNCTION_BLOCK
+
