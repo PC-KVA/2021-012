@@ -1,0 +1,83 @@
+﻿FUNCTION "dintToString" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      "time" : UDInt;
+   END_VAR
+
+   VAR_OUTPUT 
+      tString : String;
+   END_VAR
+
+   VAR_TEMP 
+      tDInt : UDInt;
+      size : USInt;
+      pos : USInt;
+      day : DInt;
+      h : DInt;
+      m : DInt;
+      s : DInt;
+   END_VAR
+
+
+BEGIN
+	#tDInt := #time;
+	
+	//сбор строки
+	#day := #tDInt / 86400;
+	#h := (#tDInt MOD 86400) / 3600;
+	#m := (#tDInt MOD 3600) / 60;
+	#s := #tDInt MOD 60;
+	#tString := '00000:00:00:00';
+	
+	VAL_STRG(IN := #day,
+	         SIZE := 5,
+	         PREC := 0,
+	         FORMAT := 1,
+	         P := 1,
+	         OUT => #tString);
+	
+	IF #h < 10 THEN
+	    #size := 1;
+	    #pos := 8;
+	ELSE
+	    #size := 2;
+	    #pos := 7;
+	END_IF;
+	
+	VAL_STRG(IN := #h,
+	         SIZE := #size,
+	         PREC := 0,
+	         FORMAT := 1,
+	         P := #pos,
+	         OUT => #tString);
+	
+	IF #m < 10 THEN
+	    #size := 1;
+	    #pos := 11;
+	ELSE
+	    #size := 2;
+	    #pos := 10;
+	END_IF;
+	
+	VAL_STRG(IN := #m,
+	         SIZE := #size,
+	         PREC := 0,
+	         FORMAT := 1,
+	         P := #pos,
+	         OUT => #tString);
+	IF #s < 10 THEN
+	    #size := 1;
+	    #pos := 14;
+	ELSE
+	    #size := 2;
+	    #pos := 13;
+	END_IF;
+	VAL_STRG(IN := #s,
+	         SIZE := #size,
+	         PREC := 0,
+	         FORMAT := 1,
+	         P := #pos,
+	         OUT => #tString);
+END_FUNCTION
+

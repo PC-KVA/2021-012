@@ -1,0 +1,78 @@
+﻿FUNCTION_BLOCK "AllFlowCounter"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR 
+      prewHour : USInt;
+      prewDay : USInt;
+      FM201 : "VolumeCounter";
+      FM501 : "VolumeCounter";
+      FM502 : "VolumeCounter";
+      FM901 : "VolumeCounter";
+      FM902 : "VolumeCounter";
+      FM1201 : "VolumeCounter";
+      FM1301 : "VolumeCounter";
+      FM1302 : "VolumeCounter";
+      FM1701 : "VolumeCounter";
+      FM1801 : "VolumeCounter";
+   END_VAR
+
+   VAR_TEMP 
+      tRetInt : Int;
+      tCurTime {InstructionName := 'DTL'; LibVersion := '1.0'} : DTL;
+      tNextHour : Bool;
+      tNextDay : Bool;
+   END_VAR
+
+
+BEGIN
+	#tRetInt := RD_LOC_T(#tCurTime);
+	IF #tCurTime.HOUR <> #prewHour THEN
+	    #prewHour := #tCurTime.HOUR;
+	    #tNextHour := TRUE;
+	END_IF;
+	IF #tCurTime.DAY <> #prewDay THEN
+	    #prewDay := #tCurTime.DAY;
+	    #tNextDay := TRUE;
+	END_IF;
+	#FM201(puls:="iFM201",
+	       nextHour:=#tNextHour,
+	       nextDay:=#tNextDay,
+	       data:="dbVolumeCounters".FM201);
+	#FM501(puls := "iFM501",
+	       nextHour := #tNextHour,
+	       nextDay := #tNextDay,
+	       data := "dbVolumeCounters".FM501);
+	#FM502(puls := "iFM502",
+	       nextHour := #tNextHour,
+	       nextDay := #tNextDay,
+	       data := "dbVolumeCounters".FM502);
+	#FM901(puls := "iFM901",
+	       nextHour := #tNextHour,
+	       nextDay := #tNextDay,
+	       data := "dbVolumeCounters".FM901);
+	#FM902(puls := "iFM902",
+	       nextHour := #tNextHour,
+	       nextDay := #tNextDay,
+	       data := "dbVolumeCounters".FM902);
+	#FM1201(puls := "iFM1201",
+	        nextHour := #tNextHour,
+	        nextDay := #tNextDay,
+	        data := "dbVolumeCounters".FM1201);
+	#FM1301(puls := "iFM1301",
+	        nextHour := #tNextHour,
+	        nextDay := #tNextDay,
+	        data := "dbVolumeCounters".FM1301);
+	#FM1302(puls := "iFM1302",
+	        nextHour := #tNextHour,
+	        nextDay := #tNextDay,
+	        data := "dbVolumeCounters".FM1302);
+	#FM1701(puls := "iFM1701",
+	        nextHour := #tNextHour,
+	        nextDay := #tNextDay,
+	        data := "dbVolumeCounters".FM1701);
+	#FM1801(puls := "iFM1801",
+	        nextHour := #tNextHour,
+	        nextDay := #tNextDay,
+	        data := "dbVolumeCounters".FM1801);
+END_FUNCTION_BLOCK
+

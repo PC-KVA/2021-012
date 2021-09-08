@@ -1,0 +1,215 @@
+﻿FUNCTION_BLOCK "AllUF"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR 
+      reqNumbWorkUF { ExternalVisible := 'False'; ExternalWritable := 'False'} : USInt;
+      readyUF : Array[0..1] of Bool;
+      workUF : Array[0..1] of Bool;
+      cmUF : Array[0..1] of Bool;
+      HandlerUF1 : "HandlerUF";
+      HandlerUF2 : "HandlerUF";
+   END_VAR
+
+   VAR_TEMP 
+      tChModeUF1 : Bool;
+      tChModeUF2 : Bool;
+      tErr : Bool;
+   END_VAR
+
+   VAR CONSTANT 
+      UF1 : Int := 0;
+      UF2 : Int := 1;
+   END_VAR
+
+
+BEGIN
+	REGION Device mode for UF12 and UF34
+	    //Valves UF1
+	    "dtAV".DVA501.mode :=
+	    "dtAV".DVA503.mode :=
+	    "dtAV".DVA505.mode :=
+	    "dtAV".DVA507.mode :=
+	    "dtAV".DVA508.mode :=
+	    "dtAV".DVA509.mode :=
+	    "dtAV".DVA512.mode :=
+	    "dtUF".modeUF1;
+	    //Valves UF2
+	    "dtAV".DVA502.mode :=
+	    "dtAV".DVA510.mode :=
+	    "dtAV".DVA513.mode :=
+	    "dtAV".DVA514.mode :=
+	    "dtAV".DVA515.mode :=
+	    "dtAV".DVA516.mode :=
+	    "dtAV".DVA506.mode :=
+	    "dtUF".modeUF2;
+	    //Common devices
+	    "dtAV".DVA504.mode :=
+	    "dtAV".DVA511.mode :=
+	    //    "dtPump".P701.mode :=
+	    //    "dtPump".P701.mode :=
+	    "dtUF".modeUF1 OR "dtUF".modeUF2;
+	END_REGION
+	REGION Calculate number of UF in work
+	    // "CalcNumDevUf"(cmStart:= "dtUF".cmAuto,
+	    //                nWorkDev:=#reqNumbWorkUF,
+	    //                lev:= "dtAnalogData".et_data["aiLT601"].Par,
+	    //                levStop1:="dtParmUF".filtrateStopLevUF1,
+	    //                levStart1:="dtParmUF".filtrateStartLevUF1,
+	    //                levStop2:="dtParmUF".filtrateStopLevUF2,
+	    //                levStart2:="dtParmUF".filtrateStartLevUF2,
+	    //                settingsError=>"dtParmUF".errSettingsLev,
+	    //                nNeedWork:=#reqNumbWorkUF);
+	END_REGION
+	REGION Prepare FOR select work UF
+	    #readyUF[#UF1] := "dtUF".modeUF1
+	    AND NOT (
+	    "dtUF".flagUF1.Err OR
+	    "dtUF".flagUF1.HW OR
+	    "dtUF".flagUF1.HW_A OR
+	    "dtUF".flagUF1.CEB1 OR
+	    "dtUF".flagUF1.CEB1_A OR
+	    "dtUF".flagUF1.CEB2 OR
+	    "dtUF".flagUF1.CEB2_A
+	    );
+	    #readyUF[#UF2] := "dtUF".modeUF2
+	    AND NOT (
+	    "dtUF".flagUF2.Err OR
+	    "dtUF".flagUF2.HW OR
+	    "dtUF".flagUF2.HW_A OR
+	    "dtUF".flagUF2.CEB1 OR
+	    "dtUF".flagUF2.CEB1_A OR
+	    "dtUF".flagUF2.CEB2 OR
+	    "dtUF".flagUF2.CEB2_A
+	    );
+	    
+	    #workUF[#UF1] := "dtUF".flagUF1.Filtration AND #readyUF[#UF1];
+	    #workUF[#UF2] := "dtUF".flagUF2.Filtration AND #readyUF[#UF2];
+	END_REGION
+	REGION Select work UF
+	    "DevInWork"(ReqNumbWorkDev := #reqNumbWorkUF,
+	                ReadyDev:=#readyUF,
+	                WorkDev := #workUF,
+	                DevCm => #cmUF,
+	                ErrNotSameBound => #tErr);
+	    
+	    IF #cmUF[#UF1] AND "dtUF".flagUF1.StandBy THEN
+	        #HandlerUF1.cmUF := "UF_CM_START";
+	    END_IF;
+	    IF NOT (#cmUF[#UF1]) AND "dtUF".flagUF1.Filtration THEN
+	        #HandlerUF1.cmUF := "UF_CM_STOP";
+	    END_IF;
+	    
+	    IF #cmUF[#UF2] AND "dtUF".flagUF2.StandBy THEN
+	        #HandlerUF2.cmUF := "UF_CM_START";
+	    END_IF;
+	    IF NOT (#cmUF[#UF2]) AND "dtUF".flagUF2.Filtration THEN
+	        #HandlerUF2.cmUF := "UF_CM_STOP";
+	    END_IF;
+	END_REGION
+	REGION Block wash
+	    //UF1
+	    "dtUF".bUF2.HW :=
+	    "dtUF".bUF2.CEB1 :=
+	    "dtUF".bUF2.CEB2 :=
+	    "dtUF".flagUF2.HW
+	    OR "dtUF".flagUF2.HW_A
+	    OR "dtUF".flagUF2.CEB1
+	    OR "dtUF".flagUF2.CEB1_A
+	    OR "dtUF".flagUF2.CEB2
+	    OR "dtUF".flagUF2.CEB2_A;
+	    
+	    "dtUF".bUF2.HW_A :=
+	    "dtUF".bUF2.CEB1_A :=
+	    "dtUF".bUF2.CEB2_A :=
+	    "dtUF".flagUF2.HW
+	//    OR ("dtAnalogData".et_data["iwLT601"].Par <= "dtParmUF".minFiltrLevForWash)
+	    OR "dtUF".flagUF2.HW_A
+	    OR "dtUF".flagUF2.CEB1
+	    OR "dtUF".flagUF2.CEB1_A
+	    OR "dtUF".flagUF2.CEB2
+	    OR "dtUF".flagUF2.CEB2_A;
+	
+	    //UF2
+	    "dtUF".bUF2.HW :=
+	    "dtUF".bUF2.CEB1 :=
+	    "dtUF".bUF2.CEB2 :=
+	    "dtUF".flagUF1.HW
+	    OR "dtUF".flagUF1.HW_A
+	    OR "dtUF".flagUF1.CEB1
+	    OR "dtUF".flagUF1.CEB1_A
+	    OR "dtUF".flagUF1.CEB2
+	    OR "dtUF".flagUF1.CEB2_A;
+	    
+	    "dtUF".bUF2.HW_A :=
+	    "dtUF".bUF2.CEB1_A :=
+	    "dtUF".bUF2.CEB2_A :=
+	    "dtUF".flagUF1.HW
+	//   OR ("dtAnalogData".et_data["iwLT601"].Par <= "dtParmUF".minFiltrLevForWash)
+	    OR "dtUF".flagUF1.HW_A
+	    OR "dtUF".flagUF1.CEB1
+	    OR "dtUF".flagUF1.CEB1_A
+	    OR "dtUF".flagUF1.CEB2
+	    OR "dtUF".flagUF1.CEB2_A;
+	END_REGION
+	
+	REGION UF handlers
+	    #HandlerUF1(// HDP := ("dtAnalogData".et_data["iwPT502"].Par - "dtAnalogData".et_data["iwPT503"].Par) >= "dtParmUF".valHDP_ForHW,
+	                otherDeviceAvaible := #readyUF[#UF2],
+	                otherDeviceInFiltration := "dtUF".flagUF2.Filtration,
+	                filtrationTimeMin := "dtParmUF".filtrationTime,
+	                flagUF := "dtUF".flagUF1,
+	                delayHDP := "dtParmUF".delayHDP,
+	                maxNumbHW_ByHDP := "dtParmUF".maxNumbHW_ByHDP,
+	                inValve_1 => "dtAV".DVA503.cmAuto,
+	                backFiltrValve_4 => "dtAV".DVA512.cmAuto,
+	                upDrainValve_7 => "dtAV".DVA507.cmAuto,
+	                drainTankValve_8 => "dtAV".DVA508.cmAuto,
+	                drainValve_9 => "dtAV".DVA509.cmAuto,
+	                airValve_10 => "dtAV".DVA501.cmAuto,
+	                counters:="dtUF".countersUF1,
+	                bUF:="dtUF".bUF1,
+	                HW_ToCEB1 := "dtParmUF".HW_ToCEB1,
+	                HW_ToCEB2 := "dtParmUF".HW_ToCEB2,
+	                SoftStopSeq := "dtUfSeq".SOFT_STOP_UF1);
+	    #HandlerUF2(//HDP := ("dtAnalogData".et_data["iwPT505"].Par - "dtAnalogData".et_data["iwPT506"].Par) >= "dtParmUF".valHDP_ForHW,
+	                otherDeviceAvaible := #readyUF[#UF1],
+	                otherDeviceInFiltration := "dtUF".flagUF1.Filtration,
+	                filtrationTimeMin := "dtParmUF".filtrationTime,
+	                flagUF := "dtUF".flagUF2,
+	                delayHDP := "dtParmUF".delayHDP,
+	                maxNumbHW_ByHDP := "dtParmUF".maxNumbHW_ByHDP,
+	                inValve_1 => "dtAV".DVA510.cmAuto,
+	                backFiltrValve_4 => "dtAV".DVA506.cmAuto,
+	                upDrainValve_7 => "dtAV".DVA514.cmAuto,
+	                drainTankValve_8 => "dtAV".DVA515.cmAuto,
+	                drainValve_9 => "dtAV".DVA516.cmAuto,
+	                airValve_10 => "dtAV".DVA502.cmAuto,
+	                counters:="dtUF".countersUF2,
+	                bUF:="dtUF".bUF2,
+	                HW_ToCEB1 := "dtParmUF".HW_ToCEB1,
+	                HW_ToCEB2 := "dtParmUF".HW_ToCEB2,
+	                SoftStopSeq := "dtUfSeq".SOFT_STOP_UF2);
+	END_REGION
+	REGION Backwash valves
+	    "dtAV".DVA504.cmAuto := #HandlerUF1.ownBwValve_2 OR #HandlerUF2.otherBwValve_3;
+	    "dtAV".DVA511.cmAuto := #HandlerUF2.ownBwValve_2 OR #HandlerUF1.otherBwValve_3;
+	END_REGION
+	REGION Filtrate valves
+	    //UF1
+	    "dtAV".DVA505.cmAuto := #HandlerUF1.outValve_6
+	    AND NOT (#HandlerUF2.clouseOtherOutValve_5 AND ("dtUF".flagUF2.HW OR "dtUF".flagUF2.CEB1 OR "dtUF".flagUF2.CEB2));
+	    //UF2
+	    "dtAV".DVA513.cmAuto := #HandlerUF2.outValve_6
+	    AND NOT (#HandlerUF1.clouseOtherOutValve_5 AND ("dtUF".flagUF1.HW OR "dtUF".flagUF1.CEB1 OR "dtUF".flagUF1.CEB2));
+	END_REGION
+	REGION Display time
+	    "dtUF".parUF1.Tf := TIME_TO_UDINT(IN := #HandlerUF1.filtration.PT - #HandlerUF1.filtration.ET) / 1000;
+	    "dtUF".parUF2.Tf := TIME_TO_UDINT(IN := #HandlerUF2.filtration.PT - #HandlerUF2.filtration.ET) / 1000;
+	    
+	    "dtUF".parUF1.Ts := TIME_TO_UINT(IN := #HandlerUF1.seq.CurTime) / 1000;
+	    "dtUF".parUF2.Ts := TIME_TO_UINT(IN := #HandlerUF2.seq.CurTime) / 1000;
+	END_REGION
+	
+	
+END_FUNCTION_BLOCK
+

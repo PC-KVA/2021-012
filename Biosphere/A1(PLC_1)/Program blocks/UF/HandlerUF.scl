@@ -1,0 +1,366 @@
+﻿FUNCTION_BLOCK "HandlerUF"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      HDP : Bool;
+      otherDeviceAvaible : Bool;
+      otherDeviceInFiltration : Bool;
+      filtrationTimeMin : UInt;
+      delayHDP : UInt;
+      maxNumbHW_ByHDP : UInt;
+      HW_ToCEB1 : UInt;
+      HW_ToCEB2 : UInt;
+   END_VAR
+
+   VAR_OUTPUT 
+      inValve_1 : Bool;
+      ownBwValve_2 : Bool;
+      otherBwValve_3 : Bool;
+      backFiltrValve_4 : Bool;
+      clouseOtherOutValve_5 : Bool;
+      outValve_6 : Bool;
+      upDrainValve_7 : Bool;
+      drainTankValve_8 : Bool;
+      drainValve_9 : Bool;
+      airValve_10 : Bool;
+      filtrPump_11 : Bool;
+      acidDPump_12 : Bool;
+      clDPump_13 : Bool;
+   END_VAR
+
+   VAR_IN_OUT 
+      flagUF : "UF_FLAGS";
+      counters : "UF_COUNTERS";
+      bUF : "UF_COMMANDS";
+      SoftStopSeq : "Sequence";
+   END_VAR
+
+   VAR 
+      cmUF : Int;
+      needSoftStop : Bool;
+      needHW : Bool;
+      needCEB1 : Bool;
+      needCEB2 : Bool;
+      CEB1_ByHDP : Bool;
+      CEB2_ByHDP : Bool;
+      alarmHDP : Bool;
+      seq : "Sequencer";
+      filtration : "TONR_200ms";
+      tmrHDP : "TON_200ms";
+   END_VAR
+
+   VAR_TEMP 
+      i : Int;
+      j : Int;
+      tCmUF : Int;
+      tRstFiltration : Bool;
+      tHoldBW : Bool;
+   END_VAR
+
+
+BEGIN
+	REGION Action before sequence
+	    CASE #cmUF OF
+	        "UF_CM_STANDBY":
+	            IF NOT (#flagUF.StandBy)
+	            THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.StandBy := TRUE;
+	                #seq.Enable := FALSE;
+	                #seq.RstStep := TRUE;
+	            END_IF;
+	        "UF_CM_START":
+	            #seq.Seq := "dtUfSeq".START;
+	            IF NOT (#flagUF.Start)
+	            THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.Start := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	            END_IF;
+	        "UF_CM_FILTRATION":
+	            IF NOT (#flagUF.Filtration)
+	            THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.Filtration := TRUE;
+	                #seq.Enable := FALSE;
+	                #seq.Done := FALSE;
+	            END_IF;
+	        "UF_CM_STOP":
+	            IF #needSoftStop THEN
+	                #seq.Seq := #SoftStopSeq;
+	            ELSE
+	                #seq.Seq := "dtUfSeq".STOP;
+	            END_IF;
+	            IF NOT (#flagUF.Stop)
+	            THEN
+	                "RST_UF_FLAGS"(#flagUF);
+	                #flagUF.Stop := TRUE;
+	                #seq.Enable := TRUE;
+	                #seq.RstStep := TRUE;
+	            END_IF;
+	        "UF_CM_HW":
+	            #seq.Seq := "dtUfSeq".HW;
+	            IF NOT (#flagUF.HW) THEN
+	                IF NOT(#bUF.HW) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.HW := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
+	            END_IF;
+	        "UF_CM_HW_A":
+	            #seq.Seq := "dtUfSeq".HW_A;
+	            IF NOT (#flagUF.HW_A) THEN
+	                IF NOT(#bUF.HW) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.HW_A := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
+	            END_IF;
+	        "UF_CM_CEB1":
+	            #seq.Seq := "dtUfSeq".CEB1;
+	            IF NOT (#flagUF.CEB1) THEN
+	                IF NOT(#flagUF.CEB1) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.CEB1 := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
+	            END_IF;
+	        "UF_CM_CEB1_A":
+	            #seq.Seq := "dtUfSeq".CEB1_A;
+	            IF NOT (#flagUF.CEB1_A) THEN
+	                IF NOT(#flagUF.CEB1_A) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.CEB1_A := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
+	            END_IF;
+	        "UF_CM_CEB2":
+	            #seq.Seq := "dtUfSeq".CEB2;
+	            IF NOT (#flagUF.CEB2) THEN
+	                IF NOT (#flagUF.CEB1) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.CEB2 := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
+	            END_IF;
+	        "UF_CM_CEB2_A":
+	            #seq.Seq := "dtUfSeq".CEB2_A;
+	            IF NOT (#flagUF.CEB2_A) THEN
+	                IF NOT (#flagUF.CEB2_A) THEN
+	                    "RST_UF_FLAGS"(#flagUF);
+	                    #flagUF.CEB2_A := TRUE;
+	                    #seq.Enable := TRUE;
+	                    #seq.RstStep := TRUE;
+	                    #tRstFiltration := TRUE;
+	                END_IF;
+	
+	            END_IF;
+	    END_CASE;
+	END_REGION
+	REGION Soft stop HW, CEB1, CEB2 (if wash was interrupt by dissable other UF)
+	    CASE #cmUF OF
+	        "UF_CM_HW",
+	        "UF_CM_CEB1",
+	        "UF_CM_CEB2":
+	            IF NOT (#otherDeviceAvaible) THEN
+	                #cmUF := "UF_CM_STOP";
+	                #needSoftStop := TRUE;
+	                //Build sequence
+	                FOR #i := "MIN_STEP_NUMB" TO 5 DO
+	                    CASE #i OF
+	                        1:  // Turn off pumps
+	                            #SoftStopSeq.devOn[#i] := #seq.Seq.devOn[#seq.Step];
+	                            #SoftStopSeq.devOn[#i, 11] := FALSE; //filtrate pump 
+	                            #SoftStopSeq.devOn[#i, 12] := FALSE; //acid
+	                            #SoftStopSeq.devOn[#i, 13] := FALSE; //clorine
+	                            #SoftStopSeq.devOn[#i + 1] := #SoftStopSeq.devOn[#i];
+	                        2: // Clouse in valves.
+	                            #SoftStopSeq.devOn[#i, 1] := FALSE; //in valve
+	                            #SoftStopSeq.devOn[#i, 4] := FALSE; //back filtrate valve.
+	                            #SoftStopSeq.devOn[#i, 5] := FALSE; //Turn off command to clouse other UF out valve
+	                            #SoftStopSeq.devOn[#i, 10] := FALSE; //air
+	                            #SoftStopSeq.devOn[#i + 1] := #SoftStopSeq.devOn[#i];
+	                        3: //Clouse valves...
+	                            #SoftStopSeq.devOn[#i, 2] := FALSE; //own bw
+	                            #SoftStopSeq.devOn[#i, 3] := FALSE; //other bw
+	                            #SoftStopSeq.devOn[#i, 6] := FALSE; //out
+	                            #SoftStopSeq.devOn[#i, 8] := FALSE; //drain to tank
+	                            #SoftStopSeq.devOn[#i + 1] := #SoftStopSeq.devOn[#i];
+	                        4: //Clouse valves...
+	                            #SoftStopSeq.devOn[#i, 9] := FALSE; //drain
+	                            #SoftStopSeq.devOn[#i, 7] := FALSE; //up drain
+	                        5: //Turn off all
+	                            #SoftStopSeq.devOn[#i, 1] :=
+	                            #SoftStopSeq.devOn[#i, 2] :=
+	                            #SoftStopSeq.devOn[#i, 3] :=
+	                            #SoftStopSeq.devOn[#i, 4] :=
+	                            #SoftStopSeq.devOn[#i, 5] :=
+	                            #SoftStopSeq.devOn[#i, 6] :=
+	                            #SoftStopSeq.devOn[#i, 7] :=
+	                            #SoftStopSeq.devOn[#i, 8] :=
+	                            #SoftStopSeq.devOn[#i, 9] :=
+	                            #SoftStopSeq.devOn[#i, 10] :=
+	                            #SoftStopSeq.devOn[#i, 11] :=
+	                            #SoftStopSeq.devOn[#i, 12] :=
+	                            #SoftStopSeq.devOn[#i, 13] :=
+	                            #SoftStopSeq.devOn[#i, 14] :=
+	                            #SoftStopSeq.devOn[#i, 15] :=
+	                            #SoftStopSeq.devOn[#i, 16] := FALSE;
+	                    END_CASE;
+	                END_FOR;
+	            END_IF;
+	    END_CASE;
+	END_REGION
+	REGION High preassure difference
+	    #tmrHDP(In := #flagUF.Filtration AND #HDP,
+	            PT := "intToTime_1"(intTime := #delayHDP, select := 0));
+	END_REGION
+	REGION Filtration
+	    #filtration(In := #flagUF.Filtration,
+	                PT := "intToTime_1"(intTime := #filtrationTimeMin, select := 0),
+	                R := #tRstFiltration);
+	END_REGION
+	REGION Hold sequencer
+	    #tHoldBW := #ownBwValve_2 AND #flagUF.HW AND NOT(#otherDeviceInFiltration);
+	    #seq.Hold := #tHoldBW;
+	END_REGION
+	REGION Sequencer
+	    #seq(Dev1 => #inValve_1,
+	         Dev2 => #ownBwValve_2,
+	         Dev3 => #otherBwValve_3,
+	         Dev4 => #backFiltrValve_4,
+	         Dev5 => #clouseOtherOutValve_5,
+	         Dev6 => #outValve_6,
+	         Dev7 => #upDrainValve_7,
+	         Dev8 => #drainTankValve_8,
+	         Dev9 => #drainValve_9,
+	         Dev10 => #airValve_10,
+	         Dev11 => #filtrPump_11,
+	         Dev12 => #acidDPump_12,
+	         Dev13 => #clDPump_13);
+	END_REGION
+	REGION Action after sequence done
+	    IF #seq.Done OR #filtration.Q OR #tmrHDP.Q THEN
+	      #tCmUF := #cmUF;
+	      CASE #cmUF OF
+	          "UF_CM_STANDBY": // After standby -> nothing
+	              ;
+	          "UF_CM_START": //After start -> filtration
+	              #tCmUF := "UF_CM_FILTRATION";
+	          "UF_CM_FILTRATION": //After filtration...
+	              IF #otherDeviceAvaible THEN //Permition for stop
+	                  IF NOT (#bUF.HW OR #bUF.CEB1 OR #bUF.CEB2) THEN //Simple HW
+	                      #tCmUF := "UF_CM_STOP";
+	                  END_IF;
+	              ELSE
+	                  IF NOT (#bUF.HW_A OR #bUF.CEB1_A OR #bUF.CEB2_A) THEN // Custom HW
+	                      #tCmUF := "UF_CM_STOP";
+	                  END_IF;
+	              END_IF;
+	              IF #tCmUF = "UF_CM_STOP" THEN // only after permition
+	                  IF #filtration.Q THEN //Filtration done...
+	                      #counters.HDPW := 0; //RST HDP counters and flags
+	                      #CEB1_ByHDP := #CEB2_ByHDP := FALSE;
+	                      IF #counters.HW >= #HW_ToCEB2 THEN // -> CEB2
+	                          #needCEB2 := TRUE;
+	                      ELSIF #counters.HW = (#HW_ToCEB1 * (#counters.CEB1 + 1)) THEN // -> CEB1
+	                          #needCEB1 := TRUE;
+	                      ELSE // -> HW
+	                          #needHW := TRUE;
+	                      END_IF;
+	                  END_IF;
+	                  IF #tmrHDP.Q THEN //When high delta preassure -> HW -> max count of HW -> CEB1 -> CEB2 -> alarm
+	                    #counters.HDPW += 1;
+	                    IF #counters.HDPW <= #maxNumbHW_ByHDP THEN
+	                        #needHW := TRUE;
+	                    ELSE
+	                        IF #CEB1_ByHDP THEN //Do CEB1 when counter more then max number
+	                              IF #CEB2_ByHDP THEN //Do CEB2 after CEB1; Again CEB2 by HDP -> alarm
+	                                #alarmHDP := TRUE;
+	                            ELSE
+	                                #CEB2_ByHDP := TRUE;
+	                                #needCEB2 := TRUE;
+	                            END_IF;
+	                        ELSE
+	                            #CEB1_ByHDP := TRUE;
+	                            #needCEB1 := TRUE;
+	                        END_IF;
+	                    END_IF;
+	                END_IF;
+	            END_IF;
+	          "UF_CM_STOP": //Stop...
+	              #needSoftStop := FALSE;
+	             IF #alarmHDP THEN //by HDP alarm -> standby
+	                #tCmUF := "UF_CM_STANDBY";
+	                #alarmHDP :=
+	//                #needHW :=
+	//                #needCEB1 :=
+	//                #needCEB2 :=
+	                #CEB1_ByHDP := 
+	                #CEB2_ByHDP := FALSE;
+	                #counters.HDPW := 0;
+	                #flagUF.ErrHDP := TRUE;
+	            ELSIF #needHW THEN //by request HW -> HW/HW_A
+	                #counters.HW += 1;
+	                IF #otherDeviceAvaible THEN
+	                    #tCmUF := "UF_CM_HW";
+	                ELSE
+	                    #tCmUF := "UF_CM_HW_A";
+	                END_IF;
+	            ELSIF #needCEB1 THEN //by request CEB1 -> CEB1/CEB1_A
+	                #counters.CEB1 += 1;
+	                IF #otherDeviceAvaible THEN
+	                    #tCmUF := "UF_CM_CEB1";
+	                ELSE
+	                    #tCmUF := "UF_CM_CEB1_A";
+	                END_IF;
+	            ELSIF #needCEB2 THEN //by request CEB2 -> CEB2/CEB2_A
+	                #counters.HW := #counters.CEB1 := 0;
+	                #counters.CEB2 += 1;
+	                IF #otherDeviceAvaible THEN
+	                    #tCmUF := "UF_CM_CEB2";
+	                ELSE
+	                    #tCmUF := "UF_CM_CEB2_A";
+	                END_IF;
+	            ELSE //simple stop -> standby
+	                #tCmUF := "UF_CM_STANDBY";
+	            END_IF;
+	          "UF_CM_HW",
+	          "UF_CM_HW_A": //HW -> Standby
+	              #needHW := FALSE;
+	              #tCmUF := "UF_CM_STANDBY";
+	          "UF_CM_CEB1",
+	          "UF_CM_CEB1_A": //CEB1 -> Standby
+	              #needCEB1 := FALSE;
+	              #tCmUF := "UF_CM_STANDBY";
+	          "UF_CM_CEB2",
+	          "UF_CM_CEB2_A": //CEB2 -> Standby
+	              #needCEB2 := FALSE;
+	              #tCmUF := "UF_CM_STANDBY";
+	      END_CASE;
+	      #cmUF := #tCmUF;
+	    END_IF;
+	END_REGION
+	REGION Error flag
+	    #flagUF.Err :=
+	    #flagUF.ErrWork
+	    OR #flagUF.ErrHW
+	    OR #flagUF.ErrCEB1
+	    OR #flagUF.ErrCEB2
+	    OR #flagUF.ErrHDP;
+	END_REGION
+	
+	  
+END_FUNCTION_BLOCK
+

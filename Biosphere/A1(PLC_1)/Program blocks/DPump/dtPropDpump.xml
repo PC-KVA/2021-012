@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Document>
+  <Engineering version="V16" />
+  <DocumentInfo>
+    <Created>2021-09-08T12:46:13.0649327Z</Created>
+    <ExportSetting>WithDefaults</ExportSetting>
+    <InstalledProducts>
+      <Product>
+        <DisplayName>Totally Integrated Automation Portal</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>TIA Portal Version Control Interface</DisplayName>
+        <DisplayVersion>V16 Update 2</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>TIA Portal Openness</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </OptionPackage>
+      <OptionPackage>
+        <DisplayName>TIA Portal Teamcenter Gateway</DisplayName>
+        <DisplayVersion>V16</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>STEP 7 Professional</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </Product>
+      <OptionPackage>
+        <DisplayName>STEP 7 Safety</DisplayName>
+        <DisplayVersion>V16</DisplayVersion>
+      </OptionPackage>
+      <Product>
+        <DisplayName>WinCC Advanced</DisplayName>
+        <DisplayVersion>V16 Update 3</DisplayVersion>
+      </Product>
+    </InstalledProducts>
+  </DocumentInfo>
+  <SW.Blocks.GlobalDB ID="0">
+    <AttributeList>
+      <AutoNumber>true</AutoNumber>
+      <DBAccessibleFromOPCUA>true</DBAccessibleFromOPCUA>
+      <HeaderAuthor />
+      <HeaderFamily />
+      <HeaderName />
+      <HeaderVersion>0.1</HeaderVersion>
+      <Interface><Sections xmlns="http://www.siemens.com/automation/Openness/SW/Interface/v4">
+  <Section Name="Static">
+    <Member Name="dp101" Datatype="&quot;PropDosing&quot;" Remanence="Retain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="FE" Datatype="Real" /><Member Name="max" Datatype="Real" /><Member Name="spAuto" Datatype="Real" /><Member Name="spHand" Datatype="Real" /><Member Name="outSP" Datatype="Real" /><Member Name="outPQW" Datatype="Int" /><Member Name="outLPH" Datatype="Real" /><Member Name="mode" Datatype="Bool" /><Member Name="enableFix" Datatype="Bool" /><Member Name="density" Datatype="Real" /><Member Name="outmA" Datatype="Real" /><Member Name="minFE" Datatype="Real" /><Member Name="fixSP" Datatype="Real" /><Member Name="spareDint" Datatype="DInt" /></Section></Sections></Member>
+    <Member Name="dp501" Datatype="&quot;PropDosing&quot;" Remanence="Retain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="FE" Datatype="Real" /><Member Name="max" Datatype="Real" /><Member Name="spAuto" Datatype="Real" /><Member Name="spHand" Datatype="Real" /><Member Name="outSP" Datatype="Real" /><Member Name="outPQW" Datatype="Int" /><Member Name="outLPH" Datatype="Real" /><Member Name="mode" Datatype="Bool" /><Member Name="enableFix" Datatype="Bool" /><Member Name="density" Datatype="Real" /><Member Name="outmA" Datatype="Real" /><Member Name="minFE" Datatype="Real" /><Member Name="fixSP" Datatype="Real" /><Member Name="spareDint" Datatype="DInt" /></Section></Sections></Member>
+    <Member Name="dp502" Datatype="&quot;PropDosing&quot;" Remanence="Retain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="FE" Datatype="Real" /><Member Name="max" Datatype="Real" /><Member Name="spAuto" Datatype="Real" /><Member Name="spHand" Datatype="Real" /><Member Name="outSP" Datatype="Real" /><Member Name="outPQW" Datatype="Int" /><Member Name="outLPH" Datatype="Real" /><Member Name="mode" Datatype="Bool" /><Member Name="enableFix" Datatype="Bool" /><Member Name="density" Datatype="Real" /><Member Name="outmA" Datatype="Real" /><Member Name="minFE" Datatype="Real" /><Member Name="fixSP" Datatype="Real" /><Member Name="spareDint" Datatype="DInt" /></Section></Sections></Member>
+    <Member Name="dp801" Datatype="&quot;PropDosing&quot;" Remanence="Retain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="FE" Datatype="Real" /><Member Name="max" Datatype="Real" /><Member Name="spAuto" Datatype="Real" /><Member Name="spHand" Datatype="Real" /><Member Name="outSP" Datatype="Real" /><Member Name="outPQW" Datatype="Int" /><Member Name="outLPH" Datatype="Real" /><Member Name="mode" Datatype="Bool" /><Member Name="enableFix" Datatype="Bool" /><Member Name="density" Datatype="Real" /><Member Name="outmA" Datatype="Real" /><Member Name="minFE" Datatype="Real" /><Member Name="fixSP" Datatype="Real" /><Member Name="spareDint" Datatype="DInt" /></Section></Sections></Member>
+    <Member Name="dp802" Datatype="&quot;PropDosing&quot;" Remanence="Retain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="FE" Datatype="Real" /><Member Name="max" Datatype="Real" /><Member Name="spAuto" Datatype="Real" /><Member Name="spHand" Datatype="Real" /><Member Name="outSP" Datatype="Real" /><Member Name="outPQW" Datatype="Int" /><Member Name="outLPH" Datatype="Real" /><Member Name="mode" Datatype="Bool" /><Member Name="enableFix" Datatype="Bool" /><Member Name="density" Datatype="Real" /><Member Name="outmA" Datatype="Real" /><Member Name="minFE" Datatype="Real" /><Member Name="fixSP" Datatype="Real" /><Member Name="spareDint" Datatype="DInt" /></Section></Sections></Member>
+    <Member Name="dp803" Datatype="&quot;PropDosing&quot;" Remanence="Retain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="FE" Datatype="Real" /><Member Name="max" Datatype="Real" /><Member Name="spAuto" Datatype="Real" /><Member Name="spHand" Datatype="Real" /><Member Name="outSP" Datatype="Real" /><Member Name="outPQW" Datatype="Int" /><Member Name="outLPH" Datatype="Real" /><Member Name="mode" Datatype="Bool" /><Member Name="enableFix" Datatype="Bool" /><Member Name="density" Datatype="Real" /><Member Name="outmA" Datatype="Real" /><Member Name="minFE" Datatype="Real" /><Member Name="fixSP" Datatype="Real" /><Member Name="spareDint" Datatype="DInt" /></Section></Sections></Member>
+    <Member Name="dp1001" Datatype="&quot;PropDosing&quot;" Remanence="Retain" Accessibility="Public"><AttributeList><BooleanAttribute Name="ExternalAccessible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalVisible" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="ExternalWritable" SystemDefined="true">true</BooleanAttribute><BooleanAttribute Name="SetPoint" SystemDefined="true">false</BooleanAttribute></AttributeList><Sections><Section Name="None"><Member Name="FE" Datatype="Real" /><Member Name="max" Datatype="Real" /><Member Name="spAuto" Datatype="Real" /><Member Name="spHand" Datatype="Real" /><Member Name="outSP" Datatype="Real" /><Member Name="outPQW" Datatype="Int" /><Member Name="outLPH" Datatype="Real" /><Member Name="mode" Datatype="Bool" /><Member Name="enableFix" Datatype="Bool" /><Member Name="density" Datatype="Real" /><Member Name="outmA" Datatype="Real" /><Member Name="minFE" Datatype="Real" /><Member Name="fixSP" Datatype="Real" /><Member Name="spareDint" Datatype="DInt" /></Section></Sections></Member>
+  </Section>
+</Sections></Interface>
+      <IsOnlyStoredInLoadMemory>false</IsOnlyStoredInLoadMemory>
+      <IsWriteProtectedInAS>false</IsWriteProtectedInAS>
+      <MemoryLayout>Standard</MemoryLayout>
+      <Name>dtPropDpump</Name>
+      <Number>21</Number>
+      <ProgrammingLanguage>DB</ProgrammingLanguage>
+    </AttributeList>
+    <ObjectList>
+      <MultilingualText ID="1" CompositionName="Comment">
+        <ObjectList>
+          <MultilingualTextItem ID="2" CompositionName="Items">
+            <AttributeList>
+              <Culture>en-US</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+          <MultilingualTextItem ID="3" CompositionName="Items">
+            <AttributeList>
+              <Culture>ru-RU</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+      <MultilingualText ID="4" CompositionName="Title">
+        <ObjectList>
+          <MultilingualTextItem ID="5" CompositionName="Items">
+            <AttributeList>
+              <Culture>en-US</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+          <MultilingualTextItem ID="6" CompositionName="Items">
+            <AttributeList>
+              <Culture>ru-RU</Culture>
+              <Text />
+            </AttributeList>
+          </MultilingualTextItem>
+        </ObjectList>
+      </MultilingualText>
+    </ObjectList>
+  </SW.Blocks.GlobalDB>
+</Document>

@@ -1,0 +1,22 @@
+﻿FUNCTION "intToTime_1" : Time
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      intTime : UInt;
+      select : UInt;   // 0-sec, 1-min,2-hour
+   END_VAR
+
+
+BEGIN
+	CASE #select OF
+	    0:
+	        #intToTime_1 := DINT_TO_TIME(UINT_TO_DINT(#intTime) * 1000);
+	    1:
+	        #intToTime_1 := DINT_TO_TIME(UINT_TO_DINT(#intTime) * 60000);
+	    2:
+	        #intToTime_1 := DINT_TO_TIME(UINT_TO_DINT(#intTime) * 3600000);
+	    ELSE  // Statement section ELSE
+	        #intToTime_1 := t#0s;
+	END_CASE;
+END_FUNCTION
+

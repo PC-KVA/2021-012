@@ -1,0 +1,38 @@
+﻿FUNCTION "levelSelect" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT 
+      sel : Int;   // 0-1+2, 1-1, 2-2
+      levelTank1 : Real;
+      levelTank2 : Real;
+   END_VAR
+
+   VAR_OUTPUT 
+      work1 : Bool;   // 0-reserv, 1-work
+      work2 : Bool;   // 0-reserv, 1-work
+      level : Real;
+   END_VAR
+
+
+BEGIN
+	CASE #sel OF
+	    0:
+	        #work1 := 1;
+	        #work2 := 1;
+	        #level := (#levelTank1 + #levelTank2) / 2.0;
+	    1:
+	        #work1 := 1;
+	        #work2 := 0;
+	        #level := #levelTank1;
+	    2:
+	        #work1 := 0;
+	        #work2 := 1;
+	        #level := #levelTank2;
+	    ELSE  // Statement section ELSE
+	        #work1 := 1;
+	        #work2 := 1;
+	        #level := 351.0;
+	END_CASE;
+	
+END_FUNCTION
+
